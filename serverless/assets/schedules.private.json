@@ -1,0 +1,37 @@
+{
+  "rules" : [
+    {
+      "id": "guid",
+      "name": "Open hours",
+      "isOpen": true,
+      "closedReason": "",
+      "dateRRule": "RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR",
+      "startDate": "",
+      "endDate": "",
+      "startTime": "08:00:00",
+      "endTime": "17:00:00"
+    },
+    {
+      "id": "guid2",
+      "name": "New Year's Day",
+      "isOpen": false,
+      "closedReason": "holiday",
+      "dateRRule": "",
+      "startDate": "2023-01-01",
+      "endDate": "2023-01-01",
+      "startTime": "",
+      "endTime": ""
+    }
+  ],
+  "schedules": [
+    {
+      "name": "Testing",
+      "emergencyClose": false,
+      "timeZone": "America/Chicago",
+      "rules": [
+        "guid",
+        "guid2"
+      ]
+    }
+  ]
+}
