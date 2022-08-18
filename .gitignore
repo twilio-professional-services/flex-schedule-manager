@@ -6,6 +6,9 @@ appConfig.js
 pluginsService.js
 build/
 
+# macOS
+.DS_Store
+
 # Logs
 logs
 *.log
