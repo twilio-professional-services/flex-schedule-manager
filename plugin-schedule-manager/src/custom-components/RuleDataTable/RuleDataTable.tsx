@@ -10,7 +10,8 @@ import { Rule } from '../../types/schedule-manager';
 
 interface OwnProps {
   isLoading: boolean;
-  rules: Array<Rule>;
+  rules: Rule[];
+  updateRules: (rules: Rule[]) => void;
 }
 
 const RuleDataTable = (props: OwnProps) => {

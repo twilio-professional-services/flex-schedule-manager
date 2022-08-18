@@ -7,8 +7,8 @@ import { Stack } from '@twilio-paste/core/stack';
 
 import RuleDataTable from '../RuleDataTable/RuleDataTable';
 import ScheduleDataTable from '../ScheduleDataTable/ScheduleDataTable';
-import ScheduleManagerService from '../../utils/serverless/ScheduleManager/ScheduleManagerService';
 import { Rule, Schedule } from '../../types/schedule-manager';
+import { loadScheduleData } from '../../utils/schedule-manager';
 
 const ScheduleView = ({}) => {
   const [ isLoading, setIsLoading ] = useState(true);
@@ -22,26 +22,34 @@ const ScheduleView = ({}) => {
   const listSchedules = async () => {
     setIsLoading(true);
     
-    const listSchedulesResponse = await ScheduleManagerService.listSchedules();
+    const scheduleData = await loadScheduleData();
     
-    if (listSchedulesResponse === null) {
+    if (scheduleData === null) {
       // TODO: Error, handle it!
     } else {
-      setRules(listSchedulesResponse.rules);
-      setSchedules(listSchedulesResponse.schedules);
+      setRules(scheduleData.rules);
+      setSchedules(scheduleData.schedules);
     }
     
     setIsLoading(false);
+  }
+  
+  const updateSchedules = (newSchedules: Schedule[]) => {
+    setSchedules(newSchedules);
+  }
+  
+  const updateRules = (newRules: Rule[]) => {
+    setRules(newRules);
   }
   
   // TODO: add heading with publish button. need to bring in emotion for css stuff
   return (
     <Tabs>
       <Tab label="Schedules">
-        <ScheduleDataTable isLoading={isLoading} rules={rules} schedules={schedules} />
+        <ScheduleDataTable isLoading={isLoading} rules={rules} schedules={schedules} updateSchedules={updateSchedules} />
       </Tab>
       <Tab label="Rules">
-        <RuleDataTable isLoading={isLoading} rules={rules} />
+        <RuleDataTable isLoading={isLoading} rules={rules} updateRules={updateRules} />
       </Tab>
     </Tabs>
   );

@@ -9,8 +9,9 @@ import { Rule, Schedule } from '../../types/schedule-manager';
 
 interface OwnProps {
   isLoading: boolean;
-  rules: Array<Rule>;
-  schedules: Array<Schedule>;
+  rules: Rule[];
+  schedules: Schedule[];
+  updateSchedules: (schedules: Schedule[]) => void;
 }
 
 const ScheduleDataTable = (props: OwnProps) => {
@@ -35,6 +36,13 @@ const ScheduleDataTable = (props: OwnProps) => {
   
   const onRowClick = (item: Schedule) => {
     setSelectedSchedule(item);
+  }
+  
+  const onUpdateSchedule = (newSchedules: Schedule[]) => {
+    props.updateSchedules(newSchedules);
+    
+    setShowPanel(false);
+    setSelectedSchedule(null);
   }
   
   return (
@@ -79,13 +87,7 @@ const ScheduleDataTable = (props: OwnProps) => {
             key="emergency-column"
             header="Emergency closed"
             content={(item: Schedule) => {
-              let emergencyStr = 'No';
-              
-              if (item.emergencyClose === true) {
-                emergencyStr = 'Yes';
-              }
-              
-              return <span>{emergencyStr}</span>
+              return <span>{item.emergencyClose === true ? 'Yes' : 'No'}</span>
             }} />
         </DataTable>
       </div>
@@ -93,7 +95,8 @@ const ScheduleDataTable = (props: OwnProps) => {
         onPanelClosed={onPanelClosed}
         rules={props.rules}
         showPanel={showPanel}
-        selectedSchedule={selectedSchedule} />
+        selectedSchedule={selectedSchedule}
+        onUpdateSchedule={onUpdateSchedule} />
     </>
   );
 }
