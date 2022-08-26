@@ -42,7 +42,7 @@ const ScheduleView = ({}) => {
     setRules(newRules);
   }
   
-  // TODO: add heading with publish button. need to bring in emotion for css stuff
+  // TODO: add heading with publish button. need to bring in styled for css stuff- use the new styled/withtheme stuff from flex-ui
   return (
     <Tabs>
       <Tab label="Schedules">

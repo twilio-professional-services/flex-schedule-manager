@@ -15,6 +15,7 @@ export interface Schedule {
   emergencyClose: boolean;
   timeZone: string;
   rules: string[];
+  status?: CheckScheduleResponse; // only returned by list-schedules
 }
 
 export interface ScheduleManagerConfig {
@@ -35,4 +36,10 @@ export interface PublishScheduleRequest {
 export interface PublishScheduleResponse {
   deploymentSid: string;
   success: boolean;
+}
+
+export interface CheckScheduleResponse {
+  isOpen: boolean;
+  closedReason: string;
+  error?: string;
 }

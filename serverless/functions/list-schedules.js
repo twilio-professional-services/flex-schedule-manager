@@ -1,4 +1,5 @@
 const ServerlessOperations = require(Runtime.getFunctions()['common/twilio-wrappers/serverless'].path);
+const ScheduleUtils = require(Runtime.getFunctions()['common/helpers/schedule-utils'].path);
 
 exports.handler = async function(context, event, callback) {
   const scriptName = arguments.callee.name;
@@ -40,6 +41,13 @@ exports.handler = async function(context, event, callback) {
       // error, no schedule data asset in latest build
       callback('Missing asset in latest build');
       return;
+    }
+    
+    // for each schedule in scheduleData, evaluate the schedule and add to the response payload
+    if (scheduleData.schedules) {
+      scheduleData.schedules.forEach(schedule => {
+        schedule.status = ScheduleUtils.evaluateSchedule(schedule.name);
+      });
     }
     
     // return schedule data plus version sid

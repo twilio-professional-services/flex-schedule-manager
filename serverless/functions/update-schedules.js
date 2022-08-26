@@ -28,6 +28,16 @@ exports.handler = async function(context, event, callback) {
   const { rules, schedules, version } = event;
   
   try {
+    
+    // if status was passed back to us, remove it
+    if (schedules) {
+      schedules.forEach(schedule => {
+        if (schedule.status) {
+          delete schedule.status;
+        }
+      });
+    }
+    
     const scheduleData = {
       rules,
       schedules

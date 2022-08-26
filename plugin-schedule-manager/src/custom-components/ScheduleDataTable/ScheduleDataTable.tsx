@@ -68,6 +68,18 @@ const ScheduleDataTable = (props: OwnProps) => {
               return <span>{item.name}</span>
             }} />
           <ColumnDefinition
+            key="status-column"
+            header="Status"
+            content={(item: Schedule) => {
+              if (!item.status) {
+                return <span>Pending Publish</span>
+              }
+              
+              const { isOpen, closedReason } = item.status;
+              
+              return <span>{ isOpen ? 'Open' : closedReason.toLowerCase() === 'closed' ? 'Closed' : `Closed (${closedReason})` }</span>
+            }} />
+          <ColumnDefinition
             key="rules-column"
             header="Rules"
             content={(item: Schedule) => {
@@ -82,6 +94,12 @@ const ScheduleDataTable = (props: OwnProps) => {
               });
               
               return <span>{ruleNames.join(', ')}</span>
+            }} />
+          <ColumnDefinition
+            key="timezone-column"
+            header="Time zone"
+            content={(item: Schedule) => {
+              return <span>{item.timeZone}</span>
             }} />
           <ColumnDefinition
             key="emergency-column"
