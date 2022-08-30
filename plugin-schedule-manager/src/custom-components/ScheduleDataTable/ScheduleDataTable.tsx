@@ -12,11 +12,17 @@ interface OwnProps {
   rules: Rule[];
   schedules: Schedule[];
   updateSchedules: (schedules: Schedule[]) => void;
+  updated: Date;
 }
 
 const ScheduleDataTable = (props: OwnProps) => {
   const [ showPanel, setShowPanel ] = useState(false);
   const [ selectedSchedule, setSelectedSchedule ] = useState(null as Schedule | null);
+  const [ statusTimestamp, setStatusTimestamp ] = useState('');
+  
+  useEffect(() => {
+    setStatusTimestamp(`${props.updated.toLocaleTimeString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`);
+  }, [props.updated])
   
   useEffect(() => {
     if (selectedSchedule !== null) {
@@ -70,6 +76,7 @@ const ScheduleDataTable = (props: OwnProps) => {
           <ColumnDefinition
             key="status-column"
             header="Status"
+            subHeader={props.isLoading ? '' : `as of ${statusTimestamp}`}
             content={(item: Schedule) => {
               if (!item.status) {
                 return <span>Pending Publish</span>

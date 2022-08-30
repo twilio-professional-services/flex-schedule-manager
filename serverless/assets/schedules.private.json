@@ -8,8 +8,8 @@
       "dateRRule": "RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR",
       "startDate": "",
       "endDate": "",
-      "startTime": "08:00:00",
-      "endTime": "17:00:00"
+      "startTime": "08:00",
+      "endTime": "17:00"
     },
     {
       "id": "guid2",

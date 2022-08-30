@@ -49,6 +49,51 @@ exports.deployBuild = async function (parameters) {
  * @param {string} parameters.scriptName the name of the top level lambda function 
  * @param {number} parameters.attempts the number of retry attempts performed
  * @param {object} parameters.context the context from calling lambda function
+ * @param {string} parameters.buildSid the build SID to check status for 
+ * @returns {object} An object containing the deployment sid
+ * @description the following method is used to fetch build status for this service
+ */
+exports.fetchBuildStatus = async function (parameters) {
+
+  const { scriptName, attempts, context, buildSid } = parameters;
+
+  if(!isString(scriptName))
+      throw "Invalid parameters object passed. Parameters must contain scriptName of calling function";
+  if(!isNumber(attempts))
+      throw "Invalid parameters object passed. Parameters must contain the number of attempts";
+  if(!isObject(context))
+      throw "Invalid parameters object passed. Parameters must contain context object";
+  if(!isString(buildSid))
+      throw "Invalid parameters object passed. Parameters must contain buildSid string";
+  
+  try {
+    const client = context.getTwilioClient();
+    
+    const serviceSid = context.SERVICE_SID;
+    
+    const build = await client.serverless.v1.services(serviceSid).builds(buildSid).buildStatus().fetch();
+    
+    if (!build) {
+      // error, no builds
+      return { success: false, status: 400, message: 'Build not found' };
+    }
+
+    return { success: true, status: 200, buildStatus: build.status };
+  }
+  catch (error) {
+    return retryHandler(
+        error, 
+        parameters,
+        arguments.callee
+    )
+  }
+}
+
+/**
+ * @param {object} parameters the parameters for the function
+ * @param {string} parameters.scriptName the name of the top level lambda function 
+ * @param {number} parameters.attempts the number of retry attempts performed
+ * @param {object} parameters.context the context from calling lambda function
  * @returns {object} An object containing the deployment sid
  * @description the following method is used to fetch the latest build for this service
  */
@@ -76,6 +121,49 @@ exports.fetchLatestBuild = async function (parameters) {
     }
 
     return { success: true, status: 200, latestBuild: builds[0] };
+  }
+  catch (error) {
+    return retryHandler(
+        error, 
+        parameters,
+        arguments.callee
+    )
+  }
+}
+
+/**
+ * @param {object} parameters the parameters for the function
+ * @param {string} parameters.scriptName the name of the top level lambda function 
+ * @param {number} parameters.attempts the number of retry attempts performed
+ * @param {object} parameters.context the context from calling lambda function
+ * @returns {object} The latest deployment
+ * @description the following method is used to fetch the latest deployment for this service
+ */
+exports.fetchLatestDeployment = async function (parameters) {
+
+  const { scriptName, attempts, context } = parameters;
+
+  if(!isString(scriptName))
+      throw "Invalid parameters object passed. Parameters must contain scriptName of calling function";
+  if(!isNumber(attempts))
+      throw "Invalid parameters object passed. Parameters must contain the number of attempts";
+  if(!isObject(context))
+      throw "Invalid parameters object passed. Parameters must contain context object";
+  
+  try {
+    const client = context.getTwilioClient();
+    
+    const envSid = context.ENVIRONMENT_SID;
+    const serviceSid = context.SERVICE_SID;
+    
+    const deployments = await client.serverless.v1.services(serviceSid).environments(envSid).deployments.list({ limit: 1 });
+    
+    if (deployments.length < 1) {
+      // error, no deployments. this should be impossible when running while deployed!
+      return { success: false, status: 400, message: 'No deployments found' };
+    }
+
+    return { success: true, status: 200, latestDeployment: deployments[0] };
   }
   catch (error) {
     return retryHandler(

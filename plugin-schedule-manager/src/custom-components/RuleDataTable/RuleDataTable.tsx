@@ -3,7 +3,7 @@ import { ColumnDefinition, DataTable } from '@twilio/flex-ui';
 import { Button } from '@twilio-paste/core/button';
 import { Box } from '@twilio-paste/core/box';
 import { PlusIcon } from "@twilio-paste/icons/esm/PlusIcon";
-import { RRule } from 'rrule'
+import { RRule } from 'rrule';
 
 import RuleEditor from '../RuleEditor/RuleEditor';
 import { Rule } from '../../types/schedule-manager';
@@ -25,6 +25,7 @@ const RuleDataTable = (props: OwnProps) => {
   }, [selectedRule]);
   
   const createRuleClick = () => {
+    setSelectedRule(null);
     setShowPanel(true);
   }
   
@@ -35,6 +36,13 @@ const RuleDataTable = (props: OwnProps) => {
   
   const onRowClick = (item: Rule) => {
     setSelectedRule(item);
+  }
+  
+  const onUpdateRule = (newRules: Rule[]) => {
+    props.updateRules(newRules);
+    
+    setShowPanel(false);
+    setSelectedRule(null);
   }
   
   return (
@@ -102,20 +110,23 @@ const RuleDataTable = (props: OwnProps) => {
               } else {
                 dateStr = '';
                 
+                if (item.dateRRule) {
+                  dateStr += RRule.fromString(item.dateRRule).toText();
+                }
+                
+                if (dateStr && (item.startDate || item.endDate)) {
+                  dateStr += ', ';
+                }
+                
                 if (item.startDate) {
                   dateStr += `from ${item.startDate}`;
                 }
                 
                 if (item.endDate) {
-                  dateStr += ` to ${item.endDate}`;
-                }
-                
-                if (item.dateRRule) {
                   if (dateStr) {
-                    dateStr += ', ';
+                    dateStr += ' ';
                   }
-                  
-                  dateStr += RRule.fromString(item.dateRRule).toText();
+                  dateStr += `until ${item.endDate}`;
                 }
               }
               
@@ -126,7 +137,8 @@ const RuleDataTable = (props: OwnProps) => {
       <RuleEditor
         onPanelClosed={onPanelClosed}
         showPanel={showPanel}
-        selectedRule={selectedRule} />
+        selectedRule={selectedRule}
+        onUpdateRule={onUpdateRule} />
     </>
   );
 }

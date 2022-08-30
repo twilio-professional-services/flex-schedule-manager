@@ -20,9 +20,6 @@ exports.handler = async function(context, event, callback) {
     // this is so we can provide a version sid in the response to avoid racing with multiple users updating schedules.
     // when updating the schedule, the client provides the sid, and we will only save if it matches the latest one.
     
-    // TODO: check if this build is the one that is deployed- otherwise if we loaded during another user's publish mid-flight, we could get the newly built asset version sid with the old version's published data.
-    // also get the latest deployment/build sid for this?
-    
     const latestBuildResult = await ServerlessOperations.fetchLatestBuild({ scriptName, context, attempts: 0 });
     
     if (!latestBuildResult.success) {
@@ -35,13 +32,27 @@ exports.handler = async function(context, event, callback) {
     const { latestBuild } = latestBuildResult;
     
     // get the schedule data asset version sid from the latest build
-    const assetVersionSid = latestBuild.assetVersions.find(asset => asset.path == assetPath)?.sid;
+    const version = latestBuild.assetVersions.find(asset => asset.path == assetPath)?.sid;
     
-    if (!assetVersionSid) {
+    if (!version) {
       // error, no schedule data asset in latest build
       callback('Missing asset in latest build');
       return;
     }
+    
+    // now validate that this build is what is deployed
+    const latestDeploymentResult = await ServerlessOperations.fetchLatestDeployment({ scriptName, context, attempts: 0 });
+    
+    if (!latestDeploymentResult.success) {
+      response.setStatusCode(latestDeploymentResult.status);
+      response.setBody({ message: latestDeploymentResult.message });
+      callback(null, response);
+      return;
+    }
+    
+    const { latestDeployment } = latestDeploymentResult;
+    
+    const versionIsDeployed = latestDeployment.buildSid === latestBuild.sid;
     
     // for each schedule in scheduleData, evaluate the schedule and add to the response payload
     if (scheduleData.schedules) {
@@ -50,10 +61,11 @@ exports.handler = async function(context, event, callback) {
       });
     }
     
-    // return schedule data plus version sid
+    // return schedule data plus version data
     const returnData = {
       ...scheduleData,
-      version: assetVersionSid
+      version,
+      versionIsDeployed
     };
     
     response.setBody(returnData);

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import tzdata from 'tzdata';
 import { ColumnDefinition, DataTable, SidePanel } from '@twilio/flex-ui';
+import { Alert } from '@twilio-paste/core/alert';
 import { Button } from '@twilio-paste/core/button';
 import { Box } from '@twilio-paste/core/box';
 import { Checkbox } from '@twilio-paste/core/checkbox';
-import { Combobox, UseComboboxState } from '@twilio-paste/core/combobox';
+import { Combobox, UseComboboxState, useCombobox } from '@twilio-paste/core/combobox';
 import { Heading } from '@twilio-paste/core/heading';
 import { HelpText } from '@twilio-paste/core/help-text';
 import { Input } from '@twilio-paste/core/input';
@@ -32,6 +33,9 @@ const ScheduleEditor = (props: OwnProps) => {
   const [emergencyClose, setEmergencyClose] = useState(false);
   const [timeZone, setTimeZone] = useState("");
   const [rules, setRules] = useState([] as Rule[]);
+  const [filteredRules, setFilteredRules] = useState([] as Rule[]);
+  const [addRuleInput, setAddRuleInput] = useState('');
+  const [error, setError] = useState('');
   
   useEffect(() => {
     let zones = [];
@@ -43,29 +47,53 @@ const ScheduleEditor = (props: OwnProps) => {
   }, []);
   
   useEffect(() => {
-    if (props.selectedSchedule !== null) {
-      setName(props.selectedSchedule.name);
-      setEmergencyClose(props.selectedSchedule.emergencyClose);
-      setTimeZone(props.selectedSchedule.timeZone);
-      
-      let rules = [] as Rule[];
-      
-      props.selectedSchedule.rules.forEach(ruleGuid => {
-        const matchingRule = props.rules.find(rule => rule.id == ruleGuid);
-        
-        if (matchingRule) {
-          rules.push(matchingRule);
-        }
-      });
-      
-      setRules(rules);
-    } else {
-      setName("");
-      setEmergencyClose(false);
-      setTimeZone("");
-      setRules([]);
+    resetView();
+    
+    if (props.selectedSchedule === null) {
+      return;
     }
+    
+    setName(props.selectedSchedule.name);
+    setEmergencyClose(props.selectedSchedule.emergencyClose);
+    setTimeZone(props.selectedSchedule.timeZone);
+    
+    let rules = [] as Rule[];
+    
+    props.selectedSchedule.rules.forEach(ruleGuid => {
+      const matchingRule = props.rules.find(rule => rule.id == ruleGuid);
+      
+      if (matchingRule) {
+        rules.push(matchingRule);
+      }
+    });
+    
+    setRules(rules);
   }, [props.selectedSchedule]);
+  
+  useEffect(() => {
+    if (!props.showPanel) {
+      resetView();
+    }
+  }, [props.showPanel]);
+  
+  useEffect(() => {
+    let filtered = props.rules.filter(rule => {
+      // Rule not yet added and matches input text if present
+      return rules.indexOf(rule) < 0 && (!addRuleInput || rule.name.toLowerCase().indexOf(addRuleInput.toLowerCase()) >= 0)
+    });
+    filtered.sort((a, b) => (a.name > b.name) ? 1 : -1);
+    
+    setFilteredRules(filtered);
+  }, [props.rules, rules, addRuleInput]);
+  
+  const resetView = () => {
+    setName("");
+    setEmergencyClose(false);
+    setTimeZone("");
+    setRules([]);
+    setAddRuleInput('');
+    setError('');
+  }
   
   const handleChangeName = (event: React.FormEvent<HTMLInputElement>) => {
     setName(event.currentTarget.value);
@@ -84,9 +112,17 @@ const ScheduleEditor = (props: OwnProps) => {
   const handleAddRule = (changes: Partial<UseComboboxState<Rule>>) => {
     if (changes.selectedItem) {
       setRules([ ...rules, changes.selectedItem ]);
-      // TODO clear combobox
+      reset();
     }
   }
+  
+  const {reset, ...state} = useCombobox({
+    items: filteredRules,
+    inputValue: addRuleInput,
+    onInputValueChange: ({inputValue}) => setAddRuleInput(inputValue ?? ''),
+    onSelectedItemChange: handleAddRule,
+    itemToString: () => ''
+  });
   
   const handleRuleUp = (rule: Rule) => {
     const newRules = [...rules];
@@ -120,27 +156,33 @@ const ScheduleEditor = (props: OwnProps) => {
   
   const handleSave = () => {
     if (!name) {
-      // TODO error
+      setError('Name is a required field.');
       return;
     }
     
     if (!timeZone) {
-      // TODO error
+      setError('Time zone is a required field.');
       return;
     }
     
     const newSchedule = { name, emergencyClose, timeZone, rules: rules.map(rule => rule.id) };
     
     if (isScheduleUnique(newSchedule, props.selectedSchedule)) {
+      setError('');
       const newScheduleData = updateScheduleData(newSchedule, props.selectedSchedule);
       props.onUpdateSchedule(newScheduleData);
     } else {
-      // TODO show error
+      setError('Name must be unique.');
     }
   }
   
   const handleDelete = () => {
-    // TODO
+    if (!props.selectedSchedule) {
+      return;
+    }
+    
+    const newScheduleData = updateScheduleData(null, props.selectedSchedule);
+    props.onUpdateSchedule(newScheduleData);
   }
   
   return (
@@ -180,6 +222,12 @@ const ScheduleEditor = (props: OwnProps) => {
             Rules
           </Heading>
           <HelpText>If an open rule matches and no closed rules match, the schedule is open. If a closed rule matches, the topmost match in the list is used.</HelpText>
+          <Combobox
+            autocomplete
+            items={filteredRules}
+            labelText="Add rule"
+            optionTemplate={(item: Rule) => item.name}
+            state={{...state}} />
           <DataTable
             items={rules}>
             <ColumnDefinition
@@ -205,12 +253,12 @@ const ScheduleEditor = (props: OwnProps) => {
                 return <span>{item.name}</span>
               }} />
           </DataTable>
-          <Combobox
-            items={props.rules.filter(rule => rules.indexOf(rule) < 0).sort((a, b) => (a.name > b.name) ? 1 : -1)}
-            labelText="Add rule"
-            onSelectedItemChange={handleAddRule}
-            optionTemplate={(item: Rule) => item.name}
-            itemToString={(item: Rule) => item.name} />
+          {
+            error.length > 0 &&
+            (
+              <Alert variant='error'>{error}</Alert>
+            )
+          }
           <Stack orientation='horizontal' spacing='space60'>
             <Button variant='primary' onClick={handleSave}>
               Save

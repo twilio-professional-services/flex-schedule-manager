@@ -22,18 +22,24 @@ export interface ScheduleManagerConfig {
   rules: Rule[];
   schedules: Schedule[];
   version: string;
+  versionIsDeployed?: boolean; // only returned by list-schedules
 }
 
-export interface UpdateScheduleResponse {
+export interface UpdateSchedulesResponse {
   buildSid: string;
   success: boolean;
 }
 
-export interface PublishScheduleRequest {
+export interface UpdateSchedulesStatusResponse {
+  buildStatus: string;
+  success: boolean;
+}
+
+export interface PublishSchedulesRequest {
   buildSid: string;
 }
 
-export interface PublishScheduleResponse {
+export interface PublishSchedulesResponse {
   deploymentSid: string;
   success: boolean;
 }
