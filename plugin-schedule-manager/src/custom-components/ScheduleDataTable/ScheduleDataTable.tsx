@@ -66,10 +66,13 @@ const ScheduleDataTable = (props: OwnProps) => {
         <DataTable
           items={props.schedules}
           isLoading={props.isLoading}
-          onRowClick={onRowClick}>
+          onRowClick={onRowClick}
+          defaultSortColumn="name-column">
           <ColumnDefinition
             key="name-column"
             header="Name"
+            sortDirection='asc'
+            sortingFn={(a: Schedule, b: Schedule) => (a.name > b.name) ? 1 : -1}
             content={(item: Schedule) => {
               return <span>{item.name}</span>
             }} />

@@ -17,11 +17,12 @@ import { RRule, Frequency, ByWeekday } from 'rrule';
 import { v4 as uuidv4 } from 'uuid';
 
 import { isRuleUnique, updateRuleData } from '../../utils/schedule-manager';
-import { Rule } from '../../types/schedule-manager';
+import { Rule, Schedule } from '../../types/schedule-manager';
 
 interface OwnProps {
   onPanelClosed: () => void;
   showPanel: boolean;
+  schedules: Schedule[];
   selectedRule: Rule | null;
   onUpdateRule: (rules: Rule[]) => void;
 }
@@ -433,7 +434,21 @@ const RuleEditor = (props: OwnProps) => {
       return;
     }
     
-    // TODO: Check if rule is referenced. If so, fail!
+    // Check if rule is referenced. If so, fail!
+    let refSchedules = [] as string[];
+    if (props.schedules) {
+      props.schedules.forEach((schedule) => {
+        if (props.selectedRule && schedule.rules.indexOf(props.selectedRule.id) >= 0) {
+          refSchedules.push(schedule.name);
+        }
+      });
+    }
+    
+    if (refSchedules.length > 0) {
+      console.log('aaaaa',refSchedules)
+      setError('Cannot delete rule because it is referenced in these schedules: ' + refSchedules.join(', '));
+      return;
+    }
     
     const newRuleData = updateRuleData(null, props.selectedRule);
     props.onUpdateRule(newRuleData);

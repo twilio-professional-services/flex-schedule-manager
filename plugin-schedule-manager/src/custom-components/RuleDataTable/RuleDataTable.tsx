@@ -6,11 +6,12 @@ import { PlusIcon } from "@twilio-paste/icons/esm/PlusIcon";
 import { RRule } from 'rrule';
 
 import RuleEditor from '../RuleEditor/RuleEditor';
-import { Rule } from '../../types/schedule-manager';
+import { Rule, Schedule } from '../../types/schedule-manager';
 
 interface OwnProps {
   isLoading: boolean;
   rules: Rule[];
+  schedules: Schedule[];
   updateRules: (rules: Rule[]) => void;
 }
 
@@ -60,10 +61,13 @@ const RuleDataTable = (props: OwnProps) => {
         <DataTable
           items={props.rules}
           isLoading={props.isLoading}
-          onRowClick={onRowClick}>
+          onRowClick={onRowClick}
+          defaultSortColumn="name-column">
           <ColumnDefinition
             key="name-column"
             header="Name"
+            sortDirection='asc'
+            sortingFn={(a: Rule, b: Rule) => (a.name > b.name) ? 1 : -1}
             content={(item: Rule) => {
               return <span>{item.name}</span>
             }} />
@@ -137,6 +141,7 @@ const RuleDataTable = (props: OwnProps) => {
       <RuleEditor
         onPanelClosed={onPanelClosed}
         showPanel={showPanel}
+        schedules={props.schedules}
         selectedRule={selectedRule}
         onUpdateRule={onUpdateRule} />
     </>

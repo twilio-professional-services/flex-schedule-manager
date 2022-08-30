@@ -20,6 +20,7 @@ const ScheduleView = ({}) => {
   const [ schedules, setSchedules ] = useState([] as Schedule[]);
   const [ updated, setUpdated ] = useState(new Date());
   const [ isVersionMismatch, setIsVersionMismatch ] = useState(false);
+  const [ loadFailed, setLoadFailed ] = useState(false);
   const [ publishState, setPublishState ] = useState(0); // 0: normal; 1: publish in progress; 2: publish version error; 3: publish failed
   
   useEffect(() => {
@@ -32,8 +33,9 @@ const ScheduleView = ({}) => {
     const scheduleData = await loadScheduleData();
     
     if (scheduleData === null) {
-      // TODO: Error, handle it!
+      setLoadFailed(true);
     } else {
+      setLoadFailed(false);
       setRules(scheduleData.rules);
       setSchedules(scheduleData.schedules);
       setUpdated(new Date());
@@ -69,10 +71,10 @@ const ScheduleView = ({}) => {
         </Heading>
         <Stack orientation='horizontal' spacing='space30'>
           { publishState < 2 && isVersionMismatch && (
-            <Text as='span'>Another schedule publish in progress. Publishing now will overwrite other changes.</Text>
+            <Text as='span'>Another schedule publish is in progress. Publishing now will overwrite other changes.</Text>
           )}
           { publishState == 2 && (
-            <Text as='span'>Schedule was updated by someone else and cannot be published.</Text>
+            <Text as='span'>Schedule was updated by someone else and cannot be published. Please reload and try again.</Text>
           )}
           { publishState == 3 && (
             <Text as='span'>Schedule publish failed.</Text>
@@ -85,7 +87,7 @@ const ScheduleView = ({}) => {
           <ScheduleDataTable isLoading={isLoading} rules={rules} schedules={schedules} updateSchedules={updateSchedules} updated={updated} />
         </Tab>
         <Tab label="Rules">
-          <RuleDataTable isLoading={isLoading} rules={rules} updateRules={updateRules} />
+          <RuleDataTable isLoading={isLoading} rules={rules} schedules={schedules} updateRules={updateRules} />
         </Tab>
       </Tabs>
       <Modal
@@ -96,8 +98,25 @@ const ScheduleView = ({}) => {
         <ModalBody>
           <PublishModalContent>
             <Stack orientation='horizontal' spacing='space60'>
-              <Spinner decorative={true} size='sizeIcon90' title='Please wait...' />
-              <Heading as='h3' variant='heading30' marginBottom='space0'>Publishing schedules, please wait...</Heading>
+              <Spinner decorative={true} size='sizeIcon100' title='Please wait...' />
+              <Stack orientation='vertical' spacing='space20'>
+                <Heading as='h3' variant='heading30' marginBottom='space0'>Publishing schedules</Heading>
+                <Text as='p'>This may take a few moments, please wait...</Text>
+              </Stack>
+            </Stack>
+          </PublishModalContent>
+        </ModalBody>
+      </Modal>
+      <Modal
+        isOpen={loadFailed}
+        onDismiss={()=>{}}
+        size='default'
+        ariaLabelledby=''>
+        <ModalBody>
+          <PublishModalContent>
+            <Stack orientation='vertical' spacing='space20'>
+              <Heading as='h3' variant='heading30' marginBottom='space0'>Failed to load schedules</Heading>
+              <Text as='p'>Please reload and try again.</Text>
             </Stack>
           </PublishModalContent>
         </ModalBody>
