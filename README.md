@@ -12,7 +12,7 @@ This solution provides a flexible, robust, and scalable way to manage open and c
 
 The schedule manager uses two main concepts: rules and schedules. Rules define a single or recurring event, such as "open Monday - Friday 8 AM - 5 PM," or "closed for holiday on 9/5/2022." Schedules are comprised of one or more rules (along with a time zone to apply the rules for). When checking the schedule from your application, such as a Studio flow, the status of the schedule will be returned (open or closed), and if it is closed, information from the matching rule (such as closed for holiday) will also be provided to allow for flexible handling.
 
-To manage rules and schedules, a Flex plugin is provided which adds a Schedule Manager item to the side navigation. This allows viewing the current configuration, the status of each schedule, and publishing updates to the configuration.
+To manage rules and schedules, a Flex plugin is provided which adds a Schedule Manager item to the side navigation for workers with the `admin` role. This allows viewing the current configuration, the status of each schedule, and publishing updates to the configuration.
 
 ![Rules view](screenshots/rules.png)
 
@@ -151,7 +151,7 @@ Content-Type: application/json
 
 ## Get the status of all schedules
 
-Schedule data may be useful within Flex, such as during queue transfers. The included utility classes in the plugin component provide an easy way to do this:
+Schedule data may be useful within Flex, such as during queue transfers. The included utility classes in the plugin component provide an easy way to get the status of all schedules:
 
 ```js
 import { loadScheduleData } from 'utils/schedule-manager';
@@ -161,7 +161,7 @@ import { loadScheduleData } from 'utils/schedule-manager';
 const scheduleData = await loadScheduleData();
 ```
 
-`scheduleData` will include a `schedules` array, containing each schedule. Each schedule will have a `status` object, which contains the same object you would get from calling the `check-schedules` function.
+This calls the `list-schedules` function, which requires the Flex user token. `scheduleData` will include a `schedules` array, containing each schedule. Each schedule will have a `status` object, which contains the same object you would get from calling the `check-schedules` function.
 
 ## Using within Studio
 
