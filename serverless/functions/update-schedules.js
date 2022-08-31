@@ -26,7 +26,14 @@ exports.handler = TokenValidator(async function(context, event, callback) {
   
   const assetPath = '/schedules.json';
   
-  const { rules, schedules, version } = event;
+  const { rules, schedules, version, TokenResult } = event;
+  
+  if (TokenResult.roles.indexOf('admin') < 0) {
+    response.setStatusCode(403);
+    response.setBody("Not authorized");
+    callback(null, response);
+    return;
+  }
   
   try {
     

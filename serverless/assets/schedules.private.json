@@ -7,23 +7,15 @@
       "dateRRule": "RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR",
       "startTime": "08:00",
       "endTime": "17:00"
-    },
-    {
-      "id": "350a335f-91aa-4ccb-b218-4b39d6c42768",
-      "name": "New Year's Day",
-      "isOpen": false,
-      "closedReason": "holiday",
-      "dateRRule": "RRULE:FREQ=YEARLY;BYMONTH=1;BYMONTHDAY=1"
     }
   ],
   "schedules": [
     {
-      "name": "Testing",
+      "name": "Support",
       "manualClose": false,
       "timeZone": "America/Chicago",
       "rules": [
-        "4dc28f6a-3bba-4ce0-be8d-bed17adfcf99",
-        "350a335f-91aa-4ccb-b218-4b39d6c42768"
+        "4dc28f6a-3bba-4ce0-be8d-bed17adfcf99"
       ]
     }
   ]

@@ -22,7 +22,14 @@ exports.handler = TokenValidator(async function(context, event, callback) {
     return;
   }
   
-  const { buildSid } = event;
+  const { buildSid, TokenResult } = event;
+  
+  if (TokenResult.roles.indexOf('admin') < 0) {
+    response.setStatusCode(403);
+    response.setBody("Not authorized");
+    callback(null, response);
+    return;
+  }
   
   try {
     // get status of the given build sid
