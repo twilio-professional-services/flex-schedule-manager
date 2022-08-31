@@ -2,6 +2,8 @@
 
 This solution provides a flexible, robust, and scalable way to manage open and closed hours for Twilio Flex applications.
 
+![Schedule manager](screenshots/schedules.png)
+
 ## Disclaimer
 
 **This software is to be considered "sample code", a Type B Deliverable, and is delivered "as-is" to the user. Twilio bears no responsibility to support the use or implementation of this software.**
@@ -11,6 +13,8 @@ This solution provides a flexible, robust, and scalable way to manage open and c
 The schedule manager uses two main concepts: rules and schedules. Rules define a single or recurring event, such as "open Monday - Friday 8 AM - 5 PM," or "closed for holiday on 9/5/2022." Schedules are comprised of one or more rules (along with a time zone to apply the rules for). When checking the schedule from your application, such as a Studio flow, the status of the schedule will be returned (open or closed), and if it is closed, information from the matching rule (such as closed for holiday) will also be provided to allow for flexible handling.
 
 To manage rules and schedules, a Flex plugin is provided which adds a Schedule Manager item to the side navigation. This allows viewing the current configuration, the status of each schedule, and publishing updates to the configuration.
+
+![Rules view](screenshots/rules.png)
 
 To allow for greater scalability than provided by Twilio Sync and some other solutions, configuration is stored within a Twilio Asset behind a Twilio Function. When updates to the configuration are being saved, a new asset version is generated and included in a new build, which is deployed when completed. This means that publishing schedules may take a few moments.
 
@@ -177,11 +181,11 @@ We are currently closed due to unforseen circumstances. Please call back later.
 
 {% when 'holiday' %}
 
-We are currently closed due to the holiday. Please call back during our normal business hours between 8 A M and 5 P M Central time.
+We are currently closed due to the holiday. Please call back during our normal business hours.
 
 {% else %}
 
-We are currently closed. Please call back between 8 A M and 5 P M Central time.
+We are currently closed. Please call back during our normal business hours.
 
 {% endcase %}
 
