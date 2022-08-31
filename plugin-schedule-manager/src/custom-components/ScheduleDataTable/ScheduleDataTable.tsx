@@ -112,10 +112,10 @@ const ScheduleDataTable = (props: OwnProps) => {
               return <span>{item.timeZone}</span>
             }} />
           <ColumnDefinition
-            key="emergency-column"
-            header="Emergency closed"
+            key="manually-closed-column"
+            header="Manually closed"
             content={(item: Schedule) => {
-              return <span>{item.emergencyClose === true ? 'Yes' : 'No'}</span>
+              return <span>{item.manualClose === true ? 'Yes' : 'No'}</span>
             }} />
         </DataTable>
       </div>

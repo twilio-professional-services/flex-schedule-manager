@@ -12,7 +12,7 @@ export interface Rule {
 
 export interface Schedule {
   name: string;
-  emergencyClose: boolean;
+  manualClose: boolean;
   timeZone: string;
   rules: string[];
   status?: CheckScheduleResponse; // only returned by list-schedules

@@ -30,7 +30,7 @@ const ScheduleEditor = (props: OwnProps) => {
   const [timeZones, setTimeZones] = useState([] as string[]);
   
   const [name, setName] = useState("");
-  const [emergencyClose, setEmergencyClose] = useState(false);
+  const [manualClose, setManualClose] = useState(false);
   const [timeZone, setTimeZone] = useState("");
   const [rules, setRules] = useState([] as Rule[]);
   const [filteredRules, setFilteredRules] = useState([] as Rule[]);
@@ -54,7 +54,7 @@ const ScheduleEditor = (props: OwnProps) => {
     }
     
     setName(props.selectedSchedule.name);
-    setEmergencyClose(props.selectedSchedule.emergencyClose);
+    setManualClose(props.selectedSchedule.manualClose);
     setTimeZone(props.selectedSchedule.timeZone);
     
     let rules = [] as Rule[];
@@ -88,7 +88,7 @@ const ScheduleEditor = (props: OwnProps) => {
   
   const resetView = () => {
     setName("");
-    setEmergencyClose(false);
+    setManualClose(false);
     setTimeZone("");
     setRules([]);
     setAddRuleInput('');
@@ -105,8 +105,8 @@ const ScheduleEditor = (props: OwnProps) => {
     }
   }
   
-  const handleChangeEmergencyClose = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setEmergencyClose(event.target.checked);
+  const handleChangeManualClose = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setManualClose(event.target.checked);
   }
   
   const handleAddRule = (changes: Partial<UseComboboxState<Rule>>) => {
@@ -165,7 +165,7 @@ const ScheduleEditor = (props: OwnProps) => {
       return;
     }
     
-    const newSchedule = { name, emergencyClose, timeZone, rules: rules.map(rule => rule.id) };
+    const newSchedule = { name, manualClose, timeZone, rules: rules.map(rule => rule.id) };
     
     if (isScheduleUnique(newSchedule, props.selectedSchedule)) {
       setError('');
@@ -211,12 +211,12 @@ const ScheduleEditor = (props: OwnProps) => {
             onSelectedItemChange={handleChangeTimeZone}
             required />
           <Checkbox
-            checked={emergencyClose}
-            onChange={handleChangeEmergencyClose}
-            id="emergencyClose"
-            name="emergencyClose"
+            checked={manualClose}
+            onChange={handleChangeManualClose}
+            id="manualClose"
+            name="manualClose"
             helpText="Overrides all selected rules">
-            Emergency closed
+            Manually close
           </Checkbox>
           <Heading as="h3" variant="heading30">
             Rules

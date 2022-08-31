@@ -1,36 +1,29 @@
 {
   "rules" : [
     {
-      "id": "guid",
+      "id": "4dc28f6a-3bba-4ce0-be8d-bed17adfcf99",
       "name": "Open hours",
       "isOpen": true,
-      "closedReason": "",
       "dateRRule": "RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR",
-      "startDate": "",
-      "endDate": "",
       "startTime": "08:00",
       "endTime": "17:00"
     },
     {
-      "id": "guid2",
+      "id": "350a335f-91aa-4ccb-b218-4b39d6c42768",
       "name": "New Year's Day",
       "isOpen": false,
       "closedReason": "holiday",
-      "dateRRule": "",
-      "startDate": "2023-01-01",
-      "endDate": "2023-01-01",
-      "startTime": "",
-      "endTime": ""
+      "dateRRule": "RRULE:FREQ=YEARLY;BYMONTH=1;BYMONTHDAY=1"
     }
   ],
   "schedules": [
     {
       "name": "Testing",
-      "emergencyClose": false,
+      "manualClose": false,
       "timeZone": "America/Chicago",
       "rules": [
-        "guid",
-        "guid2"
+        "4dc28f6a-3bba-4ce0-be8d-bed17adfcf99",
+        "350a335f-91aa-4ccb-b218-4b39d6c42768"
       ]
     }
   ]

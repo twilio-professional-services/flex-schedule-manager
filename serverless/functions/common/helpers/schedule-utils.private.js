@@ -110,12 +110,12 @@ exports.evaluateSchedule = (name, simulate) => {
   
   console.log('Checking schedule ' + schedule.name);
   
-  // if the schedule is emergency closed, we can return immediately
-  if (schedule.emergencyClose) {
+  // if the schedule is manually closed, we can return immediately
+  if (schedule.manualClose) {
     returnData.isOpen = false;
-    returnData.closedReason = "emergency";
+    returnData.closedReason = "manual";
     
-    console.log(`Schedule ${schedule.name} is emergency closed`);
+    console.log(`Schedule ${schedule.name} is manually closed`);
     return returnData;
   }
   
