@@ -104,6 +104,12 @@ twilio flex:plugins:start
 You can evaluate a schedule in your application by making an HTTP request to the `check-schedule` function:
 
 ```
+https://my-serverless-domain/check-schedule?name=Schedule%20Name%20Here
+```
+
+or
+
+```
 POST https://my-serverless-domain/check-schedule
 Content-Type: application/json
 
