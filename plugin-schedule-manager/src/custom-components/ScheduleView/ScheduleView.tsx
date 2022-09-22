@@ -21,7 +21,7 @@ const ScheduleView = ({}) => {
   const [ updated, setUpdated ] = useState(new Date());
   const [ isVersionMismatch, setIsVersionMismatch ] = useState(false);
   const [ loadFailed, setLoadFailed ] = useState(false);
-  const [ publishState, setPublishState ] = useState(0); // 0: normal; 1: publish in progress; 2: publish version error; 3: publish failed
+  const [ publishState, setPublishState ] = useState(0); // 0: normal; 1: publish in progress; 2: publish version error; 3: publish failed; 4: in available activity
   
   useEffect(() => {
     listSchedules();
@@ -78,6 +78,9 @@ const ScheduleView = ({}) => {
           )}
           { publishState == 3 && (
             <Text as='span'>Schedule publish failed.</Text>
+          )}
+          { publishState == 4 && (
+            <Text as='span'>Switch to a non-available activity to publish.</Text>
           )}
           <Button variant='secondary' onClick={publish}>Publish Schedules</Button>
         </Stack>

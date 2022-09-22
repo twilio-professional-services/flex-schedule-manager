@@ -96,7 +96,11 @@ export const isRuleUnique = (newRule: Rule, existingRule: Rule | null): boolean 
 }
 
 export const publishSchedules = async (): Promise<number> => {
-  // return values: 0=success, 2=version error, 3=failure
+  // return values: 0=success, 2=version error, 3=failure, 4=in available activity
+  if (Manager.getInstance().store.getState().flex.worker.activity.available === true) {
+    return 4;
+  }
+  
   const updateResponse = await ScheduleManagerService.updateSchedules(config);
   
   if (!updateResponse.success) {
