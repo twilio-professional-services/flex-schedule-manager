@@ -57,7 +57,7 @@ twilio serverless:deploy
 
 Note the domain name that is output when the deploy completes.
 
-**Note: Running this command after making changes to the schedule configuration will revert those changes, so be sure to first back up schedule configuration if you need to re-deploy.**
+**Note: If you need to re-deploy via CLI in the future, be sure to first update your local `assets/schedules.private.json` file with any configuration changes.**
 
 Then, update the Flex UI configuration with the serverless function domain from above:
 
