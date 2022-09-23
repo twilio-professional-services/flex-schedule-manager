@@ -57,6 +57,8 @@ twilio serverless:deploy
 
 Note the domain name that is output when the deploy completes.
 
+**Note: Running this command after making changes to the schedule configuration will revert those changes, so be sure to first back up schedule configuration if you need to re-deploy.**
+
 Then, update the Flex UI configuration with the serverless function domain from above:
 
 ```
@@ -206,6 +208,10 @@ The Flex plugin loads the configuration interface for workers with the `admin` r
 
 - When updating configuration with the `update-schedules` function, the `version` property must be provided with the same `version` that was retrieved from the `list-schedules` function which loaded the initial data. If this does not match, the request will fail. In the user interface, the following alert will be shown: `Schedule was updated by someone else and cannot be published. Please reload and try again.` This allows the worker to rescue the changes they were attempting to make, and merge them with the changes that were saved first.
 - When retrieving configuration from this `list-schedules` function, a check is made that the latest build is what is deployed. The `versionIsDeployed` property is returned indicating whether this is the case. If it is not, this means another user is in the middle of publishing changes. In the user interface, the following alert will be shown: `Another schedule publish is in progress. Publishing now will overwrite other changes.` This allows the worker to wait for the publish to complete before making changes.
+
+## Inclusion in a monoplugin
+
+While it makes sense for many Flex plugins to be combined into a monoplugin such as [twilio-proserv-flex-project-template](https://github.com/twilio-professional-services/twilio-proserv-flex-project-template), this specific solution is recommended to be deployed as part of a separate package. This is because the entire serverless service gets re-deployed upon configuration publishes, so a monoplugin structure would result in re-deploying excessive amounts of serverless functions and assets.
 
 ## Development
 
