@@ -101,6 +101,18 @@ Run the plugin locally:
 twilio flex:plugins:start
 ```
 
+Once you are happy with your plugin, you have to deploy then release the plugin for it to take affect on Twilio hosted Flex.
+
+Run the following command to start the deployment:
+
+```bash
+twilio flex:plugins:deploy --major --changelog "Notes for this version" --description "Functionality of the plugin"
+```
+
+After your deployment runs you will receive instructions for releasing your plugin from the bash prompt. You can use this or skip this step and release your plugin from the Flex plugin dashboard here https://flex.twilio.com/admin/plugins
+
+For more details on deploying your plugin, refer to the [deploying your plugin guide](https://www.twilio.com/docs/flex/plugins#deploying-your-plugin).
+
 ## Evaluating schedules
 
 You can evaluate a schedule in your application by making an HTTP request to the `check-schedule` function:
