@@ -42,7 +42,7 @@ twilio plugins:install @twilio-labs/plugin-serverless
 First, clone the repository and change to its directory:
 
 ```bash
-git clone https://github.com/dremin/flex-schedule-manager.git
+git clone https://github.com/twilio-professional-services/flex-schedule-manager.git
 
 cd flex-schedule-manager
 ```
