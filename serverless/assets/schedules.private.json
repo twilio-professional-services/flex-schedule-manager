@@ -11,7 +11,7 @@
     },
     {
       "id": "40a0dcbc-6bd1-4928-95a8-a1a647ab08aa",
-      "name": "Open hours",
+      "name": "Saturday Open hours",
       "isOpen": true,
       "dateRRule": "RRULE:FREQ=WEEKLY;BYDAY=SA",
       "startTime": "09:00",
@@ -20,7 +20,7 @@
     },
     {
       "id": "42c6997f-0ddc-4dee-a1f1-7d6651483fb9",
-      "name": "Open hours",
+      "name": "Sunday Open hours",
       "isOpen": true,
       "dateRRule": "RRULE:FREQ=WEEKLY;BYDAY=SU",
       "startTime": "10:00",
