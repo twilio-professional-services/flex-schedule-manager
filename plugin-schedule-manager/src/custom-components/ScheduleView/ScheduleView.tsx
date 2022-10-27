@@ -6,6 +6,7 @@ import { Modal, ModalBody } from '@twilio-paste/core/modal';
 import { Spinner } from '@twilio-paste/core/spinner';
 import { Stack } from '@twilio-paste/core/stack';
 import { Text } from '@twilio-paste/core/text';
+import { UploadToCloudIcon } from "@twilio-paste/icons/esm/UploadToCloudIcon";
 
 import { PublishModalContent, ScheduleViewWrapper, ScheduleViewHeader } from './ScheduleViewStyles';
 
@@ -22,9 +23,16 @@ const ScheduleView = ({}) => {
   const [ isVersionMismatch, setIsVersionMismatch ] = useState(false);
   const [ loadFailed, setLoadFailed ] = useState(false);
   const [ publishState, setPublishState ] = useState(0); // 0: normal; 1: publish in progress; 2: publish version error; 3: publish failed; 4: in available activity
+  const [ isDirty, setIsDirty ] = useState(false);
   
   useEffect(() => {
     listSchedules();
+    
+    return () => {
+      if (publishState == 1) {
+        alert("The schedule publish was aborted. Your changes may not have been saved.")
+      }
+    }
   }, []);
   
   const listSchedules = async () => {
@@ -47,10 +55,12 @@ const ScheduleView = ({}) => {
   
   const updateSchedules = (newSchedules: Schedule[]) => {
     setSchedules(newSchedules);
+    setIsDirty(true);
   }
   
   const updateRules = (newRules: Rule[]) => {
     setRules(newRules);
+    setIsDirty(true);
   }
   
   const publish = async () => {
@@ -59,6 +69,7 @@ const ScheduleView = ({}) => {
     setPublishState(publishResult);
     
     if (publishResult == 0) {
+      setIsDirty(false);
       await listSchedules();
     }
   }
@@ -82,7 +93,10 @@ const ScheduleView = ({}) => {
           { publishState == 4 && (
             <Text as='span'>Switch to a non-available activity to publish.</Text>
           )}
-          <Button variant='secondary' onClick={publish}>Publish Schedules</Button>
+          <Button variant='secondary' onClick={publish} disabled={!isDirty}>
+            <UploadToCloudIcon decorative />
+            Publish Schedules
+          </Button>
         </Stack>
       </ScheduleViewHeader>
       <Tabs>

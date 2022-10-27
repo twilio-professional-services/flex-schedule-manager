@@ -19,10 +19,18 @@ const ScheduleDataTable = (props: OwnProps) => {
   const [ showPanel, setShowPanel ] = useState(false);
   const [ selectedSchedule, setSelectedSchedule ] = useState(null as Schedule | null);
   const [ statusTimestamp, setStatusTimestamp ] = useState('');
+  const [ openIndexNext, setOpenIndexNext ] = useState(null as number | null);
   
   useEffect(() => {
     setStatusTimestamp(`${props.updated.toLocaleTimeString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`);
-  }, [props.updated])
+  }, [props.updated]);
+  
+  useEffect(() => {
+    if (openIndexNext) {
+      setSelectedSchedule(props.schedules[openIndexNext]);
+      setOpenIndexNext(null);
+    }
+  }, [props.schedules]);
   
   useEffect(() => {
     if (selectedSchedule !== null) {
@@ -44,16 +52,55 @@ const ScheduleDataTable = (props: OwnProps) => {
     setSelectedSchedule(item);
   }
   
-  const onUpdateSchedule = (newSchedules: Schedule[]) => {
-    props.updateSchedules(newSchedules);
+  const onUpdateSchedule = (newSchedules: Schedule[], openIndex: number | null) => {
+    if (openIndex) {
+      setOpenIndexNext(openIndex);
+    }
     
-    setShowPanel(false);
-    setSelectedSchedule(null);
+    props.updateSchedules(newSchedules);
+    document.querySelector('#schedule-data-table-root')?.scrollIntoView({ behavior: 'smooth' });
+    
+    if (!openIndex) {
+      setShowPanel(false);
+      setSelectedSchedule(null);
+    }
+  }
+  
+  const getScheduleStatus = (schedule: Schedule): string => {
+    if (!schedule.status) {
+      return 'Pending Publish';
+    }
+    
+    const { isOpen, closedReason } = schedule.status;
+    
+    if (isOpen) {
+      return 'Open';
+    }
+    
+    if (closedReason.toLowerCase() === 'closed') {
+      return 'Closed';
+    } else {
+      return `Closed (${closedReason})`;
+    }
+  }
+  
+  const getScheduleRules = (schedule: Schedule): string => {
+    let ruleNames = [] as string[];
+    
+    schedule.rules.forEach(ruleGuid => {
+      const matchingRule = props.rules.find(rule => rule.id == ruleGuid);
+      
+      if (matchingRule) {
+        ruleNames.push(matchingRule.name)
+      }
+    });
+    
+    return ruleNames.join(', ');
   }
   
   return (
     <>
-      <div>
+      <div id="schedule-data-table-root">
         <Box padding='space60'>
           <Button
             variant="primary"
@@ -73,50 +120,28 @@ const ScheduleDataTable = (props: OwnProps) => {
             header="Name"
             sortDirection='asc'
             sortingFn={(a: Schedule, b: Schedule) => (a.name > b.name) ? 1 : -1}
-            content={(item: Schedule) => {
-              return <span>{item.name}</span>
-            }} />
+            content={(item: Schedule) => (<span>{item.name}</span>)} />
           <ColumnDefinition
             key="status-column"
             header="Status"
             subHeader={props.isLoading ? '' : `as of ${statusTimestamp}`}
-            content={(item: Schedule) => {
-              if (!item.status) {
-                return <span>Pending Publish</span>
-              }
-              
-              const { isOpen, closedReason } = item.status;
-              
-              return <span>{ isOpen ? 'Open' : closedReason.toLowerCase() === 'closed' ? 'Closed' : `Closed (${closedReason})` }</span>
-            }} />
+            sortingFn={(a: Schedule, b: Schedule) => (getScheduleStatus(a) > getScheduleStatus(b)) ? 1 : -1}
+            content={(item: Schedule) => (<span>{getScheduleStatus(item)}</span>)} />
           <ColumnDefinition
             key="rules-column"
             header="Rules"
-            content={(item: Schedule) => {
-              let ruleNames = [] as string[];
-              
-              item.rules.forEach(ruleGuid => {
-                const matchingRule = props.rules.find(rule => rule.id == ruleGuid);
-                
-                if (matchingRule) {
-                  ruleNames.push(matchingRule.name)
-                }
-              });
-              
-              return <span>{ruleNames.join(', ')}</span>
-            }} />
+            sortingFn={(a: Schedule, b: Schedule) => (getScheduleRules(a) > getScheduleRules(b)) ? 1 : -1}
+            content={(item: Schedule) => (<span>{getScheduleRules(item)}</span>)} />
           <ColumnDefinition
             key="timezone-column"
             header="Time zone"
-            content={(item: Schedule) => {
-              return <span>{item.timeZone}</span>
-            }} />
+            sortingFn={(a: Schedule, b: Schedule) => (a.timeZone > b.timeZone) ? 1 : -1}
+            content={(item: Schedule) => (<span>{item.timeZone}</span>)} />
           <ColumnDefinition
             key="manually-closed-column"
             header="Manually closed"
-            content={(item: Schedule) => {
-              return <span>{item.manualClose === true ? 'Yes' : 'No'}</span>
-            }} />
+            sortingFn={(a: Schedule, b: Schedule) => a.manualClose ? 1 : -1}
+            content={(item: Schedule) => (<span>{item.manualClose === true ? 'Yes' : 'No'}</span>)} />
         </DataTable>
       </div>
       <ScheduleEditor

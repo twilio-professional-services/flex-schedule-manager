@@ -23,10 +23,11 @@ interface OwnProps {
   rules: Rule[];
   showPanel: boolean;
   selectedSchedule: Schedule | null;
-  onUpdateSchedule: (schedules: Schedule[]) => void;
+  onUpdateSchedule: (schedules: Schedule[], openIndex: number | null) => void;
 }
 
 const ScheduleEditor = (props: OwnProps) => {
+  const [filteredTimeZones, setFilteredTimeZones] = useState([] as string[]);
   const [timeZones, setTimeZones] = useState([] as string[]);
   
   const [name, setName] = useState("");
@@ -49,7 +50,7 @@ const ScheduleEditor = (props: OwnProps) => {
   useEffect(() => {
     resetView();
     
-    if (props.selectedSchedule === null) {
+    if (!props.selectedSchedule) {
       return;
     }
     
@@ -85,6 +86,10 @@ const ScheduleEditor = (props: OwnProps) => {
     
     setFilteredRules(filtered);
   }, [props.rules, rules, addRuleInput]);
+  
+  useEffect(() => {
+    setFilteredTimeZones(timeZones);
+  }, [timeZones]);
   
   const resetView = () => {
     setName("");
@@ -154,7 +159,7 @@ const ScheduleEditor = (props: OwnProps) => {
     setRules(rules => rules.filter(item => rule.id !== item.id));
   }
   
-  const handleSave = () => {
+  const saveSchedule = (copy: boolean = false) => {
     if (!name) {
       setError('Name is a required field.');
       return;
@@ -170,10 +175,39 @@ const ScheduleEditor = (props: OwnProps) => {
     if (isScheduleUnique(newSchedule, props.selectedSchedule)) {
       setError('');
       const newScheduleData = updateScheduleData(newSchedule, props.selectedSchedule);
-      props.onUpdateSchedule(newScheduleData);
+      
+      if (copy) {
+        copySchedule(newSchedule);
+      } else {
+        props.onUpdateSchedule(newScheduleData, null);
+      }
     } else {
       setError('Name must be unique.');
     }
+  }
+  
+  const copySchedule = (schedule: Schedule) => {
+    let name = schedule.name + ' copy';
+    
+    let scheduleCopy = {
+      ...schedule,
+      name
+    }
+    
+    while (!isScheduleUnique(scheduleCopy, null)) {
+      scheduleCopy.name = scheduleCopy.name + ' copy';
+    }
+    
+    const scheduleCopyData = updateScheduleData(scheduleCopy, null);
+    props.onUpdateSchedule(scheduleCopyData, scheduleCopyData.indexOf(scheduleCopy));
+  }
+  
+  const handleSave = () => {
+    saveSchedule(false);
+  }
+  
+  const handleCopy = () => {
+    saveSchedule(true);
   }
   
   const handleDelete = () => {
@@ -182,7 +216,7 @@ const ScheduleEditor = (props: OwnProps) => {
     }
     
     const newScheduleData = updateScheduleData(null, props.selectedSchedule);
-    props.onUpdateSchedule(newScheduleData);
+    props.onUpdateSchedule(newScheduleData, null);
   }
   
   return (
@@ -205,10 +239,18 @@ const ScheduleEditor = (props: OwnProps) => {
               required />
           </>
           <Combobox
-            items={timeZones}
+            autocomplete
+            items={filteredTimeZones}
             labelText="Time zone"
             selectedItem={timeZone}
             onSelectedItemChange={handleChangeTimeZone}
+            onInputValueChange={({ inputValue }) => {
+              if (inputValue) {
+                setFilteredTimeZones(timeZones.filter(timeZone => timeZone.toLowerCase().indexOf(inputValue.toLowerCase()) >= 0))
+              } else {
+                setFilteredTimeZones(timeZones);
+              }
+            }}
             required />
           <Checkbox
             checked={manualClose}
@@ -259,15 +301,19 @@ const ScheduleEditor = (props: OwnProps) => {
               <Alert variant='error'>{error}</Alert>
             )
           }
-          <Stack orientation='horizontal' spacing='space60'>
+          <Stack orientation='horizontal' spacing='space30'>
             <Button variant='primary' onClick={handleSave}>
               Save
             </Button>
+            <Button variant='secondary' onClick={handleCopy}>
+              Save & Copy
+            </Button>
             {
-              props.selectedSchedule !== null &&
-                (<Button variant='destructive' onClick={handleDelete}>
+              props.selectedSchedule !== null && (
+                <Button variant='destructive_secondary' onClick={handleDelete}>
                   Delete
-                </Button>)
+                </Button>
+              )
             }
           </Stack>
         </Stack>

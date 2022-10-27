@@ -18,6 +18,14 @@ interface OwnProps {
 const RuleDataTable = (props: OwnProps) => {
   const [ showPanel, setShowPanel ] = useState(false);
   const [ selectedRule, setSelectedRule ] = useState(null as Rule | null);
+  const [ openIndexNext, setOpenIndexNext ] = useState(null as number | null);
+  
+  useEffect(() => {
+    if (openIndexNext) {
+      setSelectedRule(props.rules[openIndexNext]);
+      setOpenIndexNext(null);
+    }
+  }, [props.rules]);
   
   useEffect(() => {
     if (selectedRule !== null) {
@@ -39,16 +47,82 @@ const RuleDataTable = (props: OwnProps) => {
     setSelectedRule(item);
   }
   
-  const onUpdateRule = (newRules: Rule[]) => {
-    props.updateRules(newRules);
+  const onUpdateRule = (newRules: Rule[], openIndex: number | null) => {
+    if (openIndex) {
+      setOpenIndexNext(openIndex);
+    }
     
-    setShowPanel(false);
-    setSelectedRule(null);
+    props.updateRules(newRules);
+    document.querySelector('#rule-data-table-root')?.scrollIntoView({ behavior: 'smooth' });
+    
+    if (!openIndex) {
+      setShowPanel(false);
+      setSelectedRule(null);
+    }
+  }
+  
+  const getRuleType = (rule: Rule): string => {
+    let typeStr = 'Open';
+    
+    if (rule.isOpen === false) {
+      typeStr = 'Closed';
+      
+      if (rule.closedReason && rule.closedReason !== 'closed') {
+        typeStr += ` (${rule.closedReason})`;
+      }
+    }
+    
+    return typeStr;
+  }
+  
+  const getRuleTime = (rule: Rule): string => {
+    let timeStr = 'any time';
+    
+    if (rule.startTime) {
+      timeStr = rule.startTime;
+    }
+    
+    if (rule.endTime) {
+      timeStr += ` - ${rule.endTime}`;
+    }
+    
+    return timeStr;
+  }
+  
+  const getRuleDate = (rule: Rule): string => {
+    let dateStr = 'any day';
+    
+    if (rule.startDate && rule.endDate && rule.startDate == rule.endDate) {
+      dateStr = `${rule.startDate}`;
+    } else {
+      dateStr = '';
+      
+      if (rule.dateRRule) {
+        dateStr += RRule.fromString(rule.dateRRule).toText();
+      }
+      
+      if (dateStr && (rule.startDate || rule.endDate)) {
+        dateStr += ', ';
+      }
+      
+      if (rule.startDate) {
+        dateStr += `from ${rule.startDate}`;
+      }
+      
+      if (rule.endDate) {
+        if (dateStr) {
+          dateStr += ' ';
+        }
+        dateStr += `until ${rule.endDate}`;
+      }
+    }
+    
+    return dateStr;
   }
   
   return (
     <>
-      <div>
+      <div id="rule-data-table-root">
         <Box padding='space60'>
           <Button
             variant="primary"
@@ -68,74 +142,22 @@ const RuleDataTable = (props: OwnProps) => {
             header="Name"
             sortDirection='asc'
             sortingFn={(a: Rule, b: Rule) => (a.name > b.name) ? 1 : -1}
-            content={(item: Rule) => {
-              return <span>{item.name}</span>
-            }} />
+            content={(item: Rule) => (<span>{item.name}</span>)} />
           <ColumnDefinition
             key="type-column"
             header="Type"
-            content={(item: Rule) => {
-              let typeStr = 'Open';
-              
-              if (item.isOpen === false) {
-                typeStr = 'Closed';
-                
-                if (item.closedReason && item.closedReason !== 'closed') {
-                  typeStr += ` (${item.closedReason})`;
-                }
-              }
-              
-              return <span>{typeStr}</span>
-            }} />
+            sortingFn={(a: Rule, b: Rule) => (getRuleType(a) > getRuleType(b)) ? 1 : -1}
+            content={(item: Rule) => (<span>{getRuleType(item)}</span>)} />
           <ColumnDefinition
             key="time-column"
             header="Time"
-            content={(item: Rule) => {
-              let timeStr = 'any time';
-              
-              if (item.startTime) {
-                timeStr = item.startTime;
-              }
-              
-              if (item.endTime) {
-                timeStr += ` - ${item.endTime}`;
-              }
-              
-              return <span>{timeStr}</span>
-            }} />
+            sortingFn={(a: Rule, b: Rule) => (getRuleTime(a) > getRuleTime(b)) ? 1 : -1}
+            content={(item: Rule) => (<span>{getRuleTime(item)}</span>)} />
           <ColumnDefinition
             key="date-column"
             header="Date"
-            content={(item: Rule) => {
-              let dateStr = 'any day';
-              
-              if (item.startDate && item.endDate && item.startDate == item.endDate) {
-                dateStr = `${item.startDate}`;
-              } else {
-                dateStr = '';
-                
-                if (item.dateRRule) {
-                  dateStr += RRule.fromString(item.dateRRule).toText();
-                }
-                
-                if (dateStr && (item.startDate || item.endDate)) {
-                  dateStr += ', ';
-                }
-                
-                if (item.startDate) {
-                  dateStr += `from ${item.startDate}`;
-                }
-                
-                if (item.endDate) {
-                  if (dateStr) {
-                    dateStr += ' ';
-                  }
-                  dateStr += `until ${item.endDate}`;
-                }
-              }
-              
-              return <span>{dateStr}</span>
-            }} />
+            sortingFn={(a: Rule, b: Rule) => (getRuleDate(a) > getRuleDate(b)) ? 1 : -1}
+            content={(item: Rule) => (<span>{getRuleDate(item)}</span>)} />
         </DataTable>
       </div>
       <RuleEditor

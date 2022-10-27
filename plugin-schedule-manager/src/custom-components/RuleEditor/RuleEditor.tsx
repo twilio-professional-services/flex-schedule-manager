@@ -24,7 +24,7 @@ interface OwnProps {
   showPanel: boolean;
   schedules: Schedule[];
   selectedRule: Rule | null;
-  onUpdateRule: (rules: Rule[]) => void;
+  onUpdateRule: (rules: Rule[], openIndex: number | null) => void;
 }
 
 const RuleEditor = (props: OwnProps) => {
@@ -258,7 +258,7 @@ const RuleEditor = (props: OwnProps) => {
     setEndDate(event.currentTarget.value);
   }
   
-  const handleSave = () => {
+  const saveRule = (copy: boolean) => {
     // validation
     if (!name) {
       setError('Name is a required field.');
@@ -423,10 +423,40 @@ const RuleEditor = (props: OwnProps) => {
     if (isRuleUnique(newRule, props.selectedRule)) {
       setError('');
       const newRuleData = updateRuleData(newRule, props.selectedRule);
-      props.onUpdateRule(newRuleData);
+      
+      if (copy) {
+        copyRule(newRule);
+      } else {
+        props.onUpdateRule(newRuleData, null);
+      }
     } else {
       setError('Name must be unique.');
     }
+  }
+  
+  const copyRule = (rule: Rule) => {
+    let name = rule.name + ' copy';
+    
+    let ruleCopy = {
+      ...rule,
+      id: uuidv4(),
+      name
+    }
+    
+    while (!isRuleUnique(ruleCopy, null)) {
+      ruleCopy.name = ruleCopy.name + ' copy';
+    }
+    
+    const ruleCopyData = updateRuleData(ruleCopy, null);
+    props.onUpdateRule(ruleCopyData, ruleCopyData.indexOf(ruleCopy));
+  }
+  
+  const handleSave = () => {
+    saveRule(false);
+  }
+  
+  const handleCopy = () => {
+    saveRule(true);
   }
   
   const handleDelete = () => {
@@ -451,7 +481,7 @@ const RuleEditor = (props: OwnProps) => {
     }
     
     const newRuleData = updateRuleData(null, props.selectedRule);
-    props.onUpdateRule(newRuleData);
+    props.onUpdateRule(newRuleData, null);
   }
   
   return (
@@ -696,15 +726,19 @@ const RuleEditor = (props: OwnProps) => {
               <Alert variant='error'>{error}</Alert>
             )
           }
-          <Stack orientation='horizontal' spacing='space60'>
+          <Stack orientation='horizontal' spacing='space30'>
             <Button variant='primary' onClick={handleSave}>
               Save
             </Button>
+            <Button variant='secondary' onClick={handleCopy}>
+              Save & Copy
+            </Button>
             {
-              props.selectedRule !== null &&
-                (<Button variant='destructive' onClick={handleDelete}>
+              props.selectedRule !== null && (
+                <Button variant='destructive_secondary' onClick={handleDelete}>
                   Delete
-                </Button>)
+                </Button>
+              )
             }
           </Stack>
         </Stack>
