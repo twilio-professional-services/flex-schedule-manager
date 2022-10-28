@@ -113,6 +113,10 @@ After your deployment runs you will receive instructions for releasing your plug
 
 For more details on deploying your plugin, refer to the [deploying your plugin guide](https://www.twilio.com/docs/flex/plugins#deploying-your-plugin).
 
+## Example configurations
+
+Example configurations, such as pre-defined holidays, are available in the `examples` directory. To use one of these, paste the contents of the desired file into `serverless/assets/schedules.private.json`, replacing its contents. Then, deploy the service.
+
 ## Evaluating schedules
 
 You can evaluate a schedule in your application by making an HTTP request to the `check-schedule` function:
