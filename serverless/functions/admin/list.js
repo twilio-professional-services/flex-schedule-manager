@@ -1,8 +1,8 @@
 const TokenValidator = require('twilio-flex-token-validator').functionValidator;
-const ServerlessOperations = require(Runtime.getFunctions()['common/twilio-wrappers/serverless'].path);
 const ScheduleUtils = require(Runtime.getFunctions()['common/helpers/schedule-utils'].path);
+const ServerlessOperations = require(Runtime.getFunctions()['common/twilio-wrappers/serverless'].path);
 
-exports.handler = TokenValidator(async function listSchedules(context, event, callback) {
+exports.handler = TokenValidator(async function list(context, event, callback) {
   const scriptName = arguments.callee.name;
   const response = new Twilio.Response();
   response.appendHeader('Access-Control-Allow-Origin', '*');
@@ -10,16 +10,16 @@ exports.handler = TokenValidator(async function listSchedules(context, event, ca
   response.appendHeader('Content-Type', 'application/json');
   response.appendHeader('Access-Control-Allow-Headers', 'Content-Type');
   
-  const assetPath = '/schedules.json';
+  const assetPath = '/config.json';
   
-  // load schedule data
-  const openScheduleData = Runtime.getAssets()[assetPath].open;
-  const scheduleData = JSON.parse(openScheduleData());
+  // load data
+  const openData = Runtime.getAssets()[assetPath].open;
+  const data = JSON.parse(openData());
   
   try {
     // get latest build
-    // this is so we can provide a version sid in the response to avoid racing with multiple users updating schedules.
-    // when updating the schedule, the client provides the sid, and we will only save if it matches the latest one.
+    // this is so we can provide a version sid in the response to avoid racing with multiple users updating config.
+    // when updating the config, the client provides the sid, and we will only save if it matches the latest one.
     
     const latestBuildResult = await ServerlessOperations.fetchLatestBuild({ scriptName, context, attempts: 0 });
     
@@ -32,11 +32,11 @@ exports.handler = TokenValidator(async function listSchedules(context, event, ca
     
     const { latestBuild } = latestBuildResult;
     
-    // get the schedule data asset version sid from the latest build
+    // get the data asset version sid from the latest build
     const version = latestBuild.assetVersions.find(asset => asset.path == assetPath)?.sid;
     
     if (!version) {
-      // error, no schedule data asset in latest build
+      // error, no data asset in latest build
       callback('Missing asset in latest build');
       return;
     }
@@ -55,16 +55,16 @@ exports.handler = TokenValidator(async function listSchedules(context, event, ca
     
     const versionIsDeployed = latestDeployment.buildSid === latestBuild.sid;
     
-    // for each schedule in scheduleData, evaluate the schedule and add to the response payload
-    if (scheduleData.schedules) {
-      scheduleData.schedules.forEach(schedule => {
+    // for each schedule in data, evaluate the schedule and add to the response payload
+    if (data.schedules) {
+      data.schedules.forEach(schedule => {
         schedule.status = ScheduleUtils.evaluateSchedule(schedule.name);
       });
     }
     
-    // return schedule data plus version data
+    // return config data plus version data
     const returnData = {
-      ...scheduleData,
+      data,
       version,
       versionIsDeployed
     };

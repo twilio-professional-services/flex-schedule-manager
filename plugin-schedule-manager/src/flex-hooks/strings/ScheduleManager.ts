@@ -1,0 +1,33 @@
+export enum StringTemplates {
+  SCHEDULE_MANAGER_TITLE = 'SchMgrTitle',
+  PUBLISH_ABORTED = 'SchMgrPublishAborted',
+  PUBLISH_INFLIGHT = 'SchMgrPublishInflight',
+  PUBLISH_FAILED_OTHER_UPDATE = 'SchMgrPublishFailedOtherUpdate',
+  PUBLISH_FAILED = 'SchMgrPublishFailed',
+  PUBLISH_FAILED_ACTIVITY = 'SchMgrPublishFailedActivity',
+  PUBLISH_SUCCESS = 'SchMgrPublishSuccess',
+  PUBLISH_BUTTON = 'SchMgrPublishButton',
+  PUBLISH_DIALOG_TITLE = 'SchMgrPublishDialogTitle',
+  PUBLISH_DIALOG_TEXT = 'SchMgrPublishDialogText',
+  LOAD_FAILED_TITLE = 'SchMgrLoadFailedTitle',
+  LOAD_FAILED_TEXT = 'SchMgrLoadFailedText',
+  TAB_SCHEDULES = 'SchMgrTabSchedules',
+  TAB_RULES = 'SchMgrTabRules',
+}
+
+export default {
+  [StringTemplates.SCHEDULE_MANAGER_TITLE]: 'Schedule Manager',
+  [StringTemplates.PUBLISH_ABORTED]: 'The schedule publish was aborted. Your changes may not have been saved.',
+  [StringTemplates.PUBLISH_INFLIGHT]: 'Another schedule publish is in progress. Publishing now will overwrite other changes.',
+  [StringTemplates.PUBLISH_FAILED_OTHER_UPDATE]: 'Schedule was updated by someone else and cannot be published. Please reload and try again.',
+  [StringTemplates.PUBLISH_FAILED]: 'Schedule publish failed.',
+  [StringTemplates.PUBLISH_FAILED_ACTIVITY]: 'Switch to a non-available activity to publish.',
+  [StringTemplates.PUBLISH_SUCCESS]: 'Successfully published schedules.',
+  [StringTemplates.PUBLISH_BUTTON]: 'Publish Schedules',
+  [StringTemplates.PUBLISH_DIALOG_TITLE]: 'Publishing schedules',
+  [StringTemplates.PUBLISH_DIALOG_TEXT]: 'This may take a few moments, please wait...',
+  [StringTemplates.LOAD_FAILED_TITLE]: 'Failed to load schedules',
+  [StringTemplates.LOAD_FAILED_TEXT]: 'Please reload and try again.',
+  [StringTemplates.TAB_SCHEDULES]: 'Schedules',
+  [StringTemplates.TAB_RULES]: 'Rules',
+};

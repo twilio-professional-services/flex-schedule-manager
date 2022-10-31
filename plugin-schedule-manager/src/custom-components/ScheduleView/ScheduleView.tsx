@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Tab, Tabs } from '@twilio/flex-ui';
+import { Notifications, Tab, Tabs } from '@twilio/flex-ui';
 import { Button } from '@twilio-paste/core/button';
 import { Heading } from '@twilio-paste/core/heading';
 import { Modal, ModalBody } from '@twilio-paste/core/modal';
@@ -14,6 +14,8 @@ import RuleDataTable from '../RuleDataTable/RuleDataTable';
 import ScheduleDataTable from '../ScheduleDataTable/ScheduleDataTable';
 import { Rule, Schedule } from '../../types/schedule-manager';
 import { loadScheduleData, publishSchedules } from '../../utils/schedule-manager';
+import { NotificationIds } from "../../flex-hooks/notifications/ScheduleManager";
+import ScheduleManagerStrings, { StringTemplates } from '../../flex-hooks/strings/ScheduleManager';
 
 const ScheduleView = ({}) => {
   const [ isLoading, setIsLoading ] = useState(true);
@@ -30,7 +32,7 @@ const ScheduleView = ({}) => {
     
     return () => {
       if (publishState == 1) {
-        alert("The schedule publish was aborted. Your changes may not have been saved.")
+        Notifications.showNotification(NotificationIds.PUBLISH_ABORTED);
       }
     }
   }, []);
@@ -44,8 +46,8 @@ const ScheduleView = ({}) => {
       setLoadFailed(true);
     } else {
       setLoadFailed(false);
-      setRules(scheduleData.rules);
-      setSchedules(scheduleData.schedules);
+      setRules(scheduleData.data.rules);
+      setSchedules(scheduleData.data.schedules);
       setUpdated(new Date());
       setIsVersionMismatch(scheduleData.versionIsDeployed === false);
     }
@@ -78,32 +80,23 @@ const ScheduleView = ({}) => {
     <ScheduleViewWrapper>
       <ScheduleViewHeader>
         <Heading as="h3" variant="heading30" marginBottom='space0'>
-          Schedule Manager
+          {ScheduleManagerStrings[StringTemplates.SCHEDULE_MANAGER_TITLE]}
         </Heading>
         <Stack orientation='horizontal' spacing='space30'>
           { publishState < 2 && isVersionMismatch && (
-            <Text as='span'>Another schedule publish is in progress. Publishing now will overwrite other changes.</Text>
-          )}
-          { publishState == 2 && (
-            <Text as='span'>Schedule was updated by someone else and cannot be published. Please reload and try again.</Text>
-          )}
-          { publishState == 3 && (
-            <Text as='span'>Schedule publish failed.</Text>
-          )}
-          { publishState == 4 && (
-            <Text as='span'>Switch to a non-available activity to publish.</Text>
+            <Text as='span'>{ScheduleManagerStrings[StringTemplates.PUBLISH_INFLIGHT]}</Text>
           )}
           <Button variant='secondary' onClick={publish} disabled={!isDirty}>
             <UploadToCloudIcon decorative />
-            Publish Schedules
+            {ScheduleManagerStrings[StringTemplates.PUBLISH_BUTTON]}
           </Button>
         </Stack>
       </ScheduleViewHeader>
       <Tabs>
-        <Tab label="Schedules">
+        <Tab label={ScheduleManagerStrings[StringTemplates.TAB_SCHEDULES]}>
           <ScheduleDataTable isLoading={isLoading} rules={rules} schedules={schedules} updateSchedules={updateSchedules} updated={updated} />
         </Tab>
-        <Tab label="Rules">
+        <Tab label={ScheduleManagerStrings[StringTemplates.TAB_RULES]}>
           <RuleDataTable isLoading={isLoading} rules={rules} schedules={schedules} updateRules={updateRules} />
         </Tab>
       </Tabs>
@@ -117,8 +110,8 @@ const ScheduleView = ({}) => {
             <Stack orientation='horizontal' spacing='space60'>
               <Spinner decorative={true} size='sizeIcon100' title='Please wait...' />
               <Stack orientation='vertical' spacing='space20'>
-                <Heading as='h3' variant='heading30' marginBottom='space0'>Publishing schedules</Heading>
-                <Text as='p'>This may take a few moments, please wait...</Text>
+                <Heading as='h3' variant='heading30' marginBottom='space0'>{ScheduleManagerStrings[StringTemplates.PUBLISH_DIALOG_TITLE]}</Heading>
+                <Text as='p'>{ScheduleManagerStrings[StringTemplates.PUBLISH_DIALOG_TEXT]}</Text>
               </Stack>
             </Stack>
           </PublishModalContent>
@@ -132,8 +125,8 @@ const ScheduleView = ({}) => {
         <ModalBody>
           <PublishModalContent>
             <Stack orientation='vertical' spacing='space20'>
-              <Heading as='h3' variant='heading30' marginBottom='space0'>Failed to load schedules</Heading>
-              <Text as='p'>Please reload and try again.</Text>
+              <Heading as='h3' variant='heading30' marginBottom='space0'>{ScheduleManagerStrings[StringTemplates.LOAD_FAILED_TITLE]}</Heading>
+              <Text as='p'>{ScheduleManagerStrings[StringTemplates.LOAD_FAILED_TEXT]}</Text>
             </Stack>
           </PublishModalContent>
         </ModalBody>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { SideLink, Actions } from '@twilio/flex-ui';
+import ScheduleManagerStrings, { StringTemplates } from '../../flex-hooks/strings/ScheduleManager';
 
 interface OwnProps {
   activeView?: string;
@@ -20,7 +21,7 @@ const ScheduleSideLink = (props: OwnProps) => {
       onClick= { navigate }
       key="schedule-manager-side-link"
     >
-      Schedule Manager
+      {ScheduleManagerStrings[StringTemplates.SCHEDULE_MANAGER_TITLE]}
     </SideLink>
   );
 };

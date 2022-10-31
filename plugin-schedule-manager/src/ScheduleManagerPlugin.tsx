@@ -3,6 +3,8 @@ import { FlexPlugin } from '@twilio/flex-plugin';
 import { CustomizationProvider } from "@twilio-paste/core/customization";
 
 import CustomizeFlexComponents from './flex-hooks/components';
+import CustomizeFlexStrings from './flex-hooks/strings';
+import CustomizeFlexNotifications from './flex-hooks/notifications';
 
 const PLUGIN_NAME = 'ScheduleManagerPlugin';
 
@@ -24,7 +26,9 @@ export default class ScheduleManagerPlugin extends FlexPlugin {
     });
     
     const initializers = [
-      CustomizeFlexComponents
+      CustomizeFlexComponents,
+      CustomizeFlexStrings,
+      CustomizeFlexNotifications
     ];
     
     initializers.forEach((initializer) => initializer(flex, manager));

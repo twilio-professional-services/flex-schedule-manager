@@ -2,7 +2,7 @@ const TokenValidator = require('twilio-flex-token-validator').functionValidator;
 const ParameterValidator = require(Runtime.getFunctions()['common/helpers/parameter-validator'].path);
 const ServerlessOperations = require(Runtime.getFunctions()['common/twilio-wrappers/serverless'].path);
 
-exports.handler = TokenValidator(async function updateSchedules(context, event, callback) {
+exports.handler = TokenValidator(async function update(context, event, callback) {
   const scriptName = arguments.callee.name;
   const response = new Twilio.Response();
   response.appendHeader('Access-Control-Allow-Origin', '*');
@@ -11,8 +11,7 @@ exports.handler = TokenValidator(async function updateSchedules(context, event, 
   response.appendHeader('Access-Control-Allow-Headers', 'Content-Type');
   
   const requiredParameters = [
-    { key: 'rules', purpose: 'array of schedule rules to save' },
-    { key: 'schedules', purpose: 'array of schedules to save' },
+    { key: 'data', purpose: 'data to save' },
     { key: 'version', purpose: 'asset version SID that is being updated, so that multiple users making updates do not accidentally overwrite each other' }
   ];
   const parameterError = ParameterValidator.validate(context.PATH, event, requiredParameters);
@@ -24,9 +23,9 @@ exports.handler = TokenValidator(async function updateSchedules(context, event, 
     return;
   }
   
-  const assetPath = '/schedules.json';
+  const assetPath = '/config.json';
   
-  const { rules, schedules, version, TokenResult } = event;
+  const { data, version, TokenResult } = event;
   
   if (TokenResult.roles.indexOf('admin') < 0) {
     response.setStatusCode(403);
@@ -36,20 +35,6 @@ exports.handler = TokenValidator(async function updateSchedules(context, event, 
   }
   
   try {
-    
-    // if status was passed back to us, remove it
-    if (schedules) {
-      schedules.forEach(schedule => {
-        if (schedule.status) {
-          delete schedule.status;
-        }
-      });
-    }
-    
-    const scheduleData = {
-      rules,
-      schedules
-    };
     
     // get latest build
     const latestBuildResult = await ServerlessOperations.fetchLatestBuild({ scriptName, context, attempts: 0 });
@@ -87,7 +72,7 @@ exports.handler = TokenValidator(async function updateSchedules(context, event, 
       attempts: 0,
       assetSid: assetVersion.asset_sid,
       assetPath,
-      assetData: scheduleData
+      assetData: data
     });
     
     if (!uploadResult.success) {

@@ -4,7 +4,7 @@ import { Alert } from '@twilio-paste/core/alert';
 import { Button } from '@twilio-paste/core/button';
 import { Box } from '@twilio-paste/core/box';
 import { Checkbox, CheckboxGroup } from '@twilio-paste/core/checkbox';
-import { DatePicker, formatReturnDate } from '@twilio-paste/core/date-picker';
+import { DatePicker } from '@twilio-paste/core/date-picker';
 import { Heading } from '@twilio-paste/core/heading';
 import { HelpText } from '@twilio-paste/core/help-text';
 import { Input } from '@twilio-paste/core/input';
@@ -12,7 +12,7 @@ import { Label } from '@twilio-paste/core/label';
 import { Radio, RadioGroup } from '@twilio-paste/core/radio-group';
 import { Select, Option } from '@twilio-paste/core/select';
 import { Stack } from '@twilio-paste/core/stack';
-import { TimePicker, formatReturnTime } from '@twilio-paste/core/time-picker';
+import { TimePicker } from '@twilio-paste/core/time-picker';
 import { RRule, Frequency, ByWeekday } from 'rrule';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -475,7 +475,6 @@ const RuleEditor = (props: OwnProps) => {
     }
     
     if (refSchedules.length > 0) {
-      console.log('aaaaa',refSchedules)
       setError('Cannot delete rule because it is referenced in these schedules: ' + refSchedules.join(', '));
       return;
     }

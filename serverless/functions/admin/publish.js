@@ -2,7 +2,7 @@ const TokenValidator = require('twilio-flex-token-validator').functionValidator;
 const ParameterValidator = require(Runtime.getFunctions()['common/helpers/parameter-validator'].path);
 const ServerlessOperations = require(Runtime.getFunctions()['common/twilio-wrappers/serverless'].path);
 
-exports.handler = TokenValidator(async function updateSchedulesStatus(context, event, callback) {
+exports.handler = TokenValidator(async function publish(context, event, callback) {
   const scriptName = arguments.callee.name;
   const response = new Twilio.Response();
   response.appendHeader('Access-Control-Allow-Origin', '*');
@@ -11,7 +11,7 @@ exports.handler = TokenValidator(async function updateSchedulesStatus(context, e
   response.appendHeader('Access-Control-Allow-Headers', 'Content-Type');
   
   const requiredParameters = [
-    { key: 'buildSid', purpose: 'build sid to check status of' }
+    { key: 'buildSid', purpose: 'build SID to deploy' }
   ];
   const parameterError = ParameterValidator.validate(context.PATH, event, requiredParameters);
   
@@ -32,14 +32,17 @@ exports.handler = TokenValidator(async function updateSchedulesStatus(context, e
   }
   
   try {
-    // get status of the given build sid
-    const buildStatusResult = await ServerlessOperations.fetchBuildStatus({ scriptName, context, attempts: 0, buildSid });
+    // create deployment for this build
+    const result = await ServerlessOperations.deployBuild({ scriptName, context, buildSid, attempts: 0 });
     
-    response.setStatusCode(buildStatusResult.status);
-    response.setBody(buildStatusResult);
-    callback(null, response);
+    response.setStatusCode(result.status);
+    response.setBody(result)
   } catch (error) {
-    console.log('Error executing function', error);
-    callback(error);
+    console.log(error);
+    
+    response.setStatusCode(500);
+    response.setBody({ message: error.message });
   }
+  
+  callback(null, response);
 });
