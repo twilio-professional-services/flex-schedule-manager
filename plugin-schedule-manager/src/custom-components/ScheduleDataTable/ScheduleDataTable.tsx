@@ -6,6 +6,7 @@ import { PlusIcon } from "@twilio-paste/icons/esm/PlusIcon";
 
 import ScheduleEditor from '../ScheduleEditor/ScheduleEditor';
 import { Rule, Schedule } from '../../types/schedule-manager';
+import ScheduleManagerStrings, { StringTemplates } from '../../flex-hooks/strings/ScheduleManager';
 
 interface OwnProps {
   isLoading: boolean;
@@ -68,19 +69,19 @@ const ScheduleDataTable = (props: OwnProps) => {
   
   const getScheduleStatus = (schedule: Schedule): string => {
     if (!schedule.status) {
-      return 'Pending Publish';
+      return ScheduleManagerStrings[StringTemplates.STATUS_PENDING];
     }
     
     const { isOpen, closedReason } = schedule.status;
     
     if (isOpen) {
-      return 'Open';
+      return ScheduleManagerStrings[StringTemplates.STATUS_OPEN];
     }
     
     if (closedReason.toLowerCase() === 'closed') {
-      return 'Closed';
+      return ScheduleManagerStrings[StringTemplates.STATUS_CLOSED];
     } else {
-      return `Closed (${closedReason})`;
+      return `${ScheduleManagerStrings[StringTemplates.STATUS_CLOSED]} (${closedReason})`;
     }
   }
   
@@ -107,7 +108,7 @@ const ScheduleDataTable = (props: OwnProps) => {
             disabled={props.isLoading}
             onClick={createScheduleClick}>
             <PlusIcon decorative />
-            Create Schedule
+            {ScheduleManagerStrings[StringTemplates.CREATE_SCHEDULE_BUTTON]}
           </Button>
         </Box>
         <DataTable
@@ -117,31 +118,31 @@ const ScheduleDataTable = (props: OwnProps) => {
           defaultSortColumn="name-column">
           <ColumnDefinition
             key="name-column"
-            header="Name"
+            header={ScheduleManagerStrings[StringTemplates.COLUMN_NAME]}
             sortDirection='asc'
             sortingFn={(a: Schedule, b: Schedule) => (a.name > b.name) ? 1 : -1}
             content={(item: Schedule) => (<span>{item.name}</span>)} />
           <ColumnDefinition
             key="status-column"
-            header="Status"
-            subHeader={props.isLoading ? '' : `as of ${statusTimestamp}`}
+            header={ScheduleManagerStrings[StringTemplates.COLUMN_STATUS]}
+            subHeader={props.isLoading ? '' : `${ScheduleManagerStrings[StringTemplates.COLUMN_STATUS_ASOF]} ${statusTimestamp}`}
             sortingFn={(a: Schedule, b: Schedule) => (getScheduleStatus(a) > getScheduleStatus(b)) ? 1 : -1}
             content={(item: Schedule) => (<span>{getScheduleStatus(item)}</span>)} />
           <ColumnDefinition
             key="rules-column"
-            header="Rules"
+            header={ScheduleManagerStrings[StringTemplates.COLUMN_RULES]}
             sortingFn={(a: Schedule, b: Schedule) => (getScheduleRules(a) > getScheduleRules(b)) ? 1 : -1}
             content={(item: Schedule) => (<span>{getScheduleRules(item)}</span>)} />
           <ColumnDefinition
             key="timezone-column"
-            header="Time zone"
+            header={ScheduleManagerStrings[StringTemplates.COLUMN_TIMEZONE]}
             sortingFn={(a: Schedule, b: Schedule) => (a.timeZone > b.timeZone) ? 1 : -1}
             content={(item: Schedule) => (<span>{item.timeZone}</span>)} />
           <ColumnDefinition
             key="manually-closed-column"
-            header="Manually closed"
+            header={ScheduleManagerStrings[StringTemplates.COLUMN_MANUALLYCLOSED]}
             sortingFn={(a: Schedule, b: Schedule) => a.manualClose ? 1 : -1}
-            content={(item: Schedule) => (<span>{item.manualClose === true ? 'Yes' : 'No'}</span>)} />
+            content={(item: Schedule) => (<span>{item.manualClose === true ? ScheduleManagerStrings[StringTemplates.CLOSED_YES] : ScheduleManagerStrings[StringTemplates.CLOSED_NO]}</span>)} />
         </DataTable>
       </div>
       <ScheduleEditor

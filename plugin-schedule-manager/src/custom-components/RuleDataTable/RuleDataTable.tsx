@@ -7,6 +7,7 @@ import { RRule } from 'rrule';
 
 import RuleEditor from '../RuleEditor/RuleEditor';
 import { Rule, Schedule } from '../../types/schedule-manager';
+import ScheduleManagerStrings, { StringTemplates } from '../../flex-hooks/strings/ScheduleManager';
 
 interface OwnProps {
   isLoading: boolean;
@@ -62,10 +63,10 @@ const RuleDataTable = (props: OwnProps) => {
   }
   
   const getRuleType = (rule: Rule): string => {
-    let typeStr = 'Open';
+    let typeStr = ScheduleManagerStrings[StringTemplates.STATUS_OPEN];
     
     if (rule.isOpen === false) {
-      typeStr = 'Closed';
+      typeStr = ScheduleManagerStrings[StringTemplates.STATUS_CLOSED];
       
       if (rule.closedReason && rule.closedReason !== 'closed') {
         typeStr += ` (${rule.closedReason})`;
@@ -76,7 +77,7 @@ const RuleDataTable = (props: OwnProps) => {
   }
   
   const getRuleTime = (rule: Rule): string => {
-    let timeStr = 'any time';
+    let timeStr = ScheduleManagerStrings[StringTemplates.ANY_TIME];
     
     if (rule.startTime) {
       timeStr = rule.startTime;
@@ -90,7 +91,7 @@ const RuleDataTable = (props: OwnProps) => {
   }
   
   const getRuleDate = (rule: Rule): string => {
-    let dateStr = 'any day';
+    let dateStr = ScheduleManagerStrings[StringTemplates.ANY_DAY];
     
     if (rule.startDate && rule.endDate && rule.startDate == rule.endDate) {
       dateStr = `${rule.startDate}`;
@@ -106,14 +107,14 @@ const RuleDataTable = (props: OwnProps) => {
       }
       
       if (rule.startDate) {
-        dateStr += `from ${rule.startDate}`;
+        dateStr += `${ScheduleManagerStrings[StringTemplates.DATE_FROM]} ${rule.startDate}`;
       }
       
       if (rule.endDate) {
         if (dateStr) {
           dateStr += ' ';
         }
-        dateStr += `until ${rule.endDate}`;
+        dateStr += `${ScheduleManagerStrings[StringTemplates.DATE_UNTIL]} ${rule.endDate}`;
       }
     }
     
@@ -129,7 +130,7 @@ const RuleDataTable = (props: OwnProps) => {
             disabled={props.isLoading}
             onClick={createRuleClick}>
             <PlusIcon decorative />
-            Create Rule
+            {ScheduleManagerStrings[StringTemplates.CREATE_RULE_BUTTON]}
           </Button>
         </Box>
         <DataTable
@@ -139,23 +140,23 @@ const RuleDataTable = (props: OwnProps) => {
           defaultSortColumn="name-column">
           <ColumnDefinition
             key="name-column"
-            header="Name"
+            header={ScheduleManagerStrings[StringTemplates.COLUMN_NAME]}
             sortDirection='asc'
             sortingFn={(a: Rule, b: Rule) => (a.name > b.name) ? 1 : -1}
             content={(item: Rule) => (<span>{item.name}</span>)} />
           <ColumnDefinition
             key="type-column"
-            header="Type"
+            header={ScheduleManagerStrings[StringTemplates.COLUMN_TYPE]}
             sortingFn={(a: Rule, b: Rule) => (getRuleType(a) > getRuleType(b)) ? 1 : -1}
             content={(item: Rule) => (<span>{getRuleType(item)}</span>)} />
           <ColumnDefinition
             key="time-column"
-            header="Time"
+            header={ScheduleManagerStrings[StringTemplates.COLUMN_TIME]}
             sortingFn={(a: Rule, b: Rule) => (getRuleTime(a) > getRuleTime(b)) ? 1 : -1}
             content={(item: Rule) => (<span>{getRuleTime(item)}</span>)} />
           <ColumnDefinition
             key="date-column"
-            header="Date"
+            header={ScheduleManagerStrings[StringTemplates.COLUMN_DATE]}
             sortingFn={(a: Rule, b: Rule) => (getRuleDate(a) > getRuleDate(b)) ? 1 : -1}
             content={(item: Rule) => (<span>{getRuleDate(item)}</span>)} />
         </DataTable>
