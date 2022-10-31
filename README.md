@@ -57,7 +57,7 @@ twilio serverless:deploy
 
 Note the domain name that is output when the deploy completes.
 
-**Note: If you need to re-deploy via CLI in the future, be sure to first update your local `assets/schedules.private.json` file with any configuration changes.**
+**Note: If you need to re-deploy via CLI in the future, be sure to first update your local `serverless/assets/config.private.json` file with any configuration changes.**
 
 Then, update the Flex UI configuration with the serverless function domain from above:
 
@@ -115,7 +115,7 @@ For more details on deploying your plugin, refer to the [deploying your plugin g
 
 ## Example configurations
 
-Example configurations, such as pre-defined holidays, are available in the `examples` directory. To use one of these, paste the contents of the desired file into `serverless/assets/schedules.private.json`, replacing its contents. Then, deploy the service.
+Example configurations, such as pre-defined holidays, are available in the `examples` directory. To use one of these, paste the contents of the desired file into `serverless/assets/config.private.json`, replacing its contents. Then, deploy the service.
 
 ## Evaluating schedules
 
@@ -185,7 +185,7 @@ import { loadScheduleData } from 'utils/schedule-manager';
 const scheduleData = await loadScheduleData();
 ```
 
-This calls the `list-schedules` function, which requires the Flex user token. `scheduleData` will include a `schedules` array, containing each schedule. Each schedule will have a `status` object, which contains the same object you would get from calling the `check-schedules` function.
+This calls the `admin/list` function, which requires the Flex user token. `scheduleData` will include a `data` object with a `schedules` array, containing each schedule. Each schedule will have a `status` object, which contains the same object you would get from calling the `check-schedules` function.
 
 ## Using within Studio
 
