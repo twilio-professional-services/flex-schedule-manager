@@ -86,7 +86,7 @@
   ],
   "schedules": [
     {
-      "name": "Example Schedule",
+      "name": "Example",
       "manualClose": false,
       "timeZone": "America/Chicago",
       "rules": [
