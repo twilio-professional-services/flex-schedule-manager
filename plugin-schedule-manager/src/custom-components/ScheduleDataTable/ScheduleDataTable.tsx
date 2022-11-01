@@ -17,6 +17,8 @@ interface OwnProps {
 }
 
 const ScheduleDataTable = (props: OwnProps) => {
+  const maxRulesLength = 80;
+  
   const [ showPanel, setShowPanel ] = useState(false);
   const [ selectedSchedule, setSelectedSchedule ] = useState(null as Schedule | null);
   const [ statusTimestamp, setStatusTimestamp ] = useState('');
@@ -132,7 +134,16 @@ const ScheduleDataTable = (props: OwnProps) => {
             key="rules-column"
             header={ScheduleManagerStrings[StringTemplates.RULES]}
             sortingFn={(a: Schedule, b: Schedule) => (getScheduleRules(a) > getScheduleRules(b)) ? 1 : -1}
-            content={(item: Schedule) => (<span>{getScheduleRules(item)}</span>)} />
+            content={(item: Schedule) => {
+              const ruleStr = getScheduleRules(item);
+              let trimmed = ruleStr;
+              
+              if (trimmed.length > maxRulesLength) {
+                trimmed = trimmed.slice(0, maxRulesLength) + '...'
+              }
+              
+              return (<span title={ruleStr}>{trimmed}</span>)
+            }} />
           <ColumnDefinition
             key="timezone-column"
             header={ScheduleManagerStrings[StringTemplates.TIMEZONE]}
