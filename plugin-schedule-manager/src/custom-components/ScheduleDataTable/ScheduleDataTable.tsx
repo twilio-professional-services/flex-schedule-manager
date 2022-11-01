@@ -75,13 +75,13 @@ const ScheduleDataTable = (props: OwnProps) => {
     const { isOpen, closedReason } = schedule.status;
     
     if (isOpen) {
-      return ScheduleManagerStrings[StringTemplates.STATUS_OPEN];
+      return ScheduleManagerStrings[StringTemplates.OPEN];
     }
     
     if (closedReason.toLowerCase() === 'closed') {
-      return ScheduleManagerStrings[StringTemplates.STATUS_CLOSED];
+      return ScheduleManagerStrings[StringTemplates.CLOSED];
     } else {
-      return `${ScheduleManagerStrings[StringTemplates.STATUS_CLOSED]} (${closedReason})`;
+      return `${ScheduleManagerStrings[StringTemplates.CLOSED]} (${closedReason})`;
     }
   }
   
@@ -118,7 +118,7 @@ const ScheduleDataTable = (props: OwnProps) => {
           defaultSortColumn="name-column">
           <ColumnDefinition
             key="name-column"
-            header={ScheduleManagerStrings[StringTemplates.COLUMN_NAME]}
+            header={ScheduleManagerStrings[StringTemplates.NAME]}
             sortDirection='asc'
             sortingFn={(a: Schedule, b: Schedule) => (a.name > b.name) ? 1 : -1}
             content={(item: Schedule) => (<span>{item.name}</span>)} />
@@ -130,12 +130,12 @@ const ScheduleDataTable = (props: OwnProps) => {
             content={(item: Schedule) => (<span>{getScheduleStatus(item)}</span>)} />
           <ColumnDefinition
             key="rules-column"
-            header={ScheduleManagerStrings[StringTemplates.COLUMN_RULES]}
+            header={ScheduleManagerStrings[StringTemplates.RULES]}
             sortingFn={(a: Schedule, b: Schedule) => (getScheduleRules(a) > getScheduleRules(b)) ? 1 : -1}
             content={(item: Schedule) => (<span>{getScheduleRules(item)}</span>)} />
           <ColumnDefinition
             key="timezone-column"
-            header={ScheduleManagerStrings[StringTemplates.COLUMN_TIMEZONE]}
+            header={ScheduleManagerStrings[StringTemplates.TIMEZONE]}
             sortingFn={(a: Schedule, b: Schedule) => (a.timeZone > b.timeZone) ? 1 : -1}
             content={(item: Schedule) => (<span>{item.timeZone}</span>)} />
           <ColumnDefinition

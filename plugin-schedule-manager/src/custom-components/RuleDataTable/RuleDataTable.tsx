@@ -63,10 +63,10 @@ const RuleDataTable = (props: OwnProps) => {
   }
   
   const getRuleType = (rule: Rule): string => {
-    let typeStr = ScheduleManagerStrings[StringTemplates.STATUS_OPEN];
+    let typeStr = ScheduleManagerStrings[StringTemplates.OPEN];
     
     if (rule.isOpen === false) {
-      typeStr = ScheduleManagerStrings[StringTemplates.STATUS_CLOSED];
+      typeStr = ScheduleManagerStrings[StringTemplates.CLOSED];
       
       if (rule.closedReason && rule.closedReason !== 'closed') {
         typeStr += ` (${rule.closedReason})`;
@@ -140,23 +140,23 @@ const RuleDataTable = (props: OwnProps) => {
           defaultSortColumn="name-column">
           <ColumnDefinition
             key="name-column"
-            header={ScheduleManagerStrings[StringTemplates.COLUMN_NAME]}
+            header={ScheduleManagerStrings[StringTemplates.NAME]}
             sortDirection='asc'
             sortingFn={(a: Rule, b: Rule) => (a.name > b.name) ? 1 : -1}
             content={(item: Rule) => (<span>{item.name}</span>)} />
           <ColumnDefinition
             key="type-column"
-            header={ScheduleManagerStrings[StringTemplates.COLUMN_TYPE]}
+            header={ScheduleManagerStrings[StringTemplates.TYPE]}
             sortingFn={(a: Rule, b: Rule) => (getRuleType(a) > getRuleType(b)) ? 1 : -1}
             content={(item: Rule) => (<span>{getRuleType(item)}</span>)} />
           <ColumnDefinition
             key="time-column"
-            header={ScheduleManagerStrings[StringTemplates.COLUMN_TIME]}
+            header={ScheduleManagerStrings[StringTemplates.TIME]}
             sortingFn={(a: Rule, b: Rule) => (getRuleTime(a) > getRuleTime(b)) ? 1 : -1}
             content={(item: Rule) => (<span>{getRuleTime(item)}</span>)} />
           <ColumnDefinition
             key="date-column"
-            header={ScheduleManagerStrings[StringTemplates.COLUMN_DATE]}
+            header={ScheduleManagerStrings[StringTemplates.DATE]}
             sortingFn={(a: Rule, b: Rule) => (getRuleDate(a) > getRuleDate(b)) ? 1 : -1}
             content={(item: Rule) => (<span>{getRuleDate(item)}</span>)} />
         </DataTable>
