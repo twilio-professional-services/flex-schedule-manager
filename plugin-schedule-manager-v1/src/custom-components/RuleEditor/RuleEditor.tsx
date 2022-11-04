@@ -4,7 +4,7 @@ import { Alert } from '@twilio-paste/core/alert';
 import { Button } from '@twilio-paste/core/button';
 import { Box } from '@twilio-paste/core/box';
 import { Checkbox, CheckboxGroup } from '@twilio-paste/core/checkbox';
-import { DatePicker, formatReturnDate } from '@twilio-paste/core/date-picker';
+import { DatePicker } from '@twilio-paste/core/date-picker';
 import { Heading } from '@twilio-paste/core/heading';
 import { HelpText } from '@twilio-paste/core/help-text';
 import { Input } from '@twilio-paste/core/input';
@@ -12,19 +12,20 @@ import { Label } from '@twilio-paste/core/label';
 import { Radio, RadioGroup } from '@twilio-paste/core/radio-group';
 import { Select, Option } from '@twilio-paste/core/select';
 import { Stack } from '@twilio-paste/core/stack';
-import { TimePicker, formatReturnTime } from '@twilio-paste/core/time-picker';
+import { TimePicker } from '@twilio-paste/core/time-picker';
 import { RRule, Frequency, ByWeekday } from 'rrule';
 import { v4 as uuidv4 } from 'uuid';
 
 import { isRuleUnique, updateRuleData } from '../../utils/schedule-manager';
 import { Rule, Schedule } from '../../types/schedule-manager';
+import ScheduleManagerStrings, { StringTemplates } from '../../flex-hooks/strings/ScheduleManager';
 
 interface OwnProps {
   onPanelClosed: () => void;
   showPanel: boolean;
   schedules: Schedule[];
   selectedRule: Rule | null;
-  onUpdateRule: (rules: Rule[]) => void;
+  onUpdateRule: (rules: Rule[], openIndex: number | null) => void;
 }
 
 const RuleEditor = (props: OwnProps) => {
@@ -258,20 +259,20 @@ const RuleEditor = (props: OwnProps) => {
     setEndDate(event.currentTarget.value);
   }
   
-  const handleSave = () => {
+  const saveRule = (copy: boolean) => {
     // validation
     if (!name) {
-      setError('Name is a required field.');
+      setError(ScheduleManagerStrings[StringTemplates.ERROR_NAME_REQUIRED]);
       return;
     }
     
     if (!isOpen && !closedReason) {
-      setError('Closed reason is a required field for closed rules.');
+      setError(ScheduleManagerStrings[StringTemplates.ERROR_REASON_REQUIRED]);
       return;
     }
     
     if (!allDay && (!startTime || !endTime)) {
-      setError('Both start and end time are required fields for non-all-day rules.');
+      setError(ScheduleManagerStrings[StringTemplates.ERROR_TIME_REQUIRED]);
       return;
     }
     
@@ -280,7 +281,7 @@ const RuleEditor = (props: OwnProps) => {
       const end = new Date('2000-01-01 ' + endTime);
       
       if (start >= end) {
-        setError('End time must be later than start time.');
+        setError(ScheduleManagerStrings[StringTemplates.ERROR_ENDTIME]);
         return;
       }
     }
@@ -288,46 +289,46 @@ const RuleEditor = (props: OwnProps) => {
     switch (recurrence) {
       case 'none':
         if (!singleDate) {
-          setError('Date is a required field.');
+          setError(ScheduleManagerStrings[StringTemplates.ERROR_DATE_REQUIRED]);
           return;
         }
         break;
       case 'weekly':
         if (!dowMonday && !dowTuesday && !dowWednesday && !dowThursday && !dowFriday && !dowSaturday && !dowSunday) {
-          setError('At least one day of week must be selected.');
+          setError(ScheduleManagerStrings[StringTemplates.ERROR_DOW_REQUIRED]);
           return;
         }
         break;
       case 'monthly':
         if (!dayOfMonth) {
-          setError('Day of month is a required field.');
+          setError(ScheduleManagerStrings[StringTemplates.ERROR_DOM_REQUIRED]);
           return;
         }
         const numDayOfMonthMonthly = Number(dayOfMonth);
         if (isNaN(numDayOfMonthMonthly)) {
-          setError('Day of month must be a number.');
+          setError(ScheduleManagerStrings[StringTemplates.ERROR_DOM_NUMBER]);
           return;
         }
         if (numDayOfMonthMonthly < 1 || numDayOfMonthMonthly > 31) {
-          setError('Day of month must be between 1 and 31.');
+          setError(ScheduleManagerStrings[StringTemplates.ERROR_DOM_RANGE]);
           return;
         }
         break;
       case 'yearly':
         const numDayOfMonthYearly = Number(dayOfMonth);
         if (isNaN(numDayOfMonthYearly)) {
-          setError('Day of month must be a number.');
+          setError(ScheduleManagerStrings[StringTemplates.ERROR_DOM_NUMBER]);
           return;
         }
         if (numDayOfMonthYearly < 1 || numDayOfMonthYearly > 31) {
-          setError('Day of month must be between 1 and 31.');
+          setError(ScheduleManagerStrings[StringTemplates.ERROR_DOM_RANGE]);
           return;
         }
         break;
     }
     
     if (recurrence !== "none" && restrictDates && !startDate && !endDate) {
-      setError('Start and/or end date is required when restricting the date range.');
+      setError(ScheduleManagerStrings[StringTemplates.ERROR_STARTENDDATE_REQUIRED]);
       return;
     }
     
@@ -336,7 +337,7 @@ const RuleEditor = (props: OwnProps) => {
       const end = new Date(endDate);
       
       if (start >= end) {
-        setError('End date must be after start date.');
+        setError(ScheduleManagerStrings[StringTemplates.ERROR_ENDDATE]);
         return;
       }
     }
@@ -423,10 +424,40 @@ const RuleEditor = (props: OwnProps) => {
     if (isRuleUnique(newRule, props.selectedRule)) {
       setError('');
       const newRuleData = updateRuleData(newRule, props.selectedRule);
-      props.onUpdateRule(newRuleData);
+      
+      if (copy) {
+        copyRule(newRule);
+      } else {
+        props.onUpdateRule(newRuleData, null);
+      }
     } else {
-      setError('Name must be unique.');
+      setError(ScheduleManagerStrings[StringTemplates.ERROR_NAME_UNIQUE]);
     }
+  }
+  
+  const copyRule = (rule: Rule) => {
+    let name = rule.name + ` ${ScheduleManagerStrings[StringTemplates.NAME_COPY]}`;
+    
+    let ruleCopy = {
+      ...rule,
+      id: uuidv4(),
+      name
+    }
+    
+    while (!isRuleUnique(ruleCopy, null)) {
+      ruleCopy.name = ruleCopy.name + ` ${ScheduleManagerStrings[StringTemplates.NAME_COPY]}`;
+    }
+    
+    const ruleCopyData = updateRuleData(ruleCopy, null);
+    props.onUpdateRule(ruleCopyData, ruleCopyData.indexOf(ruleCopy));
+  }
+  
+  const handleSave = () => {
+    saveRule(false);
+  }
+  
+  const handleCopy = () => {
+    saveRule(true);
   }
   
   const handleDelete = () => {
@@ -445,13 +476,12 @@ const RuleEditor = (props: OwnProps) => {
     }
     
     if (refSchedules.length > 0) {
-      console.log('aaaaa',refSchedules)
-      setError('Cannot delete rule because it is referenced in these schedules: ' + refSchedules.join(', '));
+      setError(ScheduleManagerStrings[StringTemplates.ERROR_RULE_REFERENCED] + ' ' + refSchedules.join(', '));
       return;
     }
     
     const newRuleData = updateRuleData(null, props.selectedRule);
-    props.onUpdateRule(newRuleData);
+    props.onUpdateRule(newRuleData, null);
   }
   
   return (
@@ -459,12 +489,12 @@ const RuleEditor = (props: OwnProps) => {
       displayName='ruleEditor'
       isHidden={!props.showPanel}
       handleCloseClick={props.onPanelClosed}
-      title={<span>{ props.selectedRule === null ? 'New' : 'Edit' } Rule</span>}
+      title={<span>{ props.selectedRule === null ? ScheduleManagerStrings[StringTemplates.NEW_RULE_TITLE] : ScheduleManagerStrings[StringTemplates.EDIT_RULE_TITLE] }</span>}
     >
       <Box padding='space60'>
         <Stack orientation="vertical" spacing='space80'>
           <>
-            <Label htmlFor="name" required>Name</Label>
+            <Label htmlFor="name" required>{ScheduleManagerStrings[StringTemplates.NAME]}</Label>
             <Input
               id="name"
               name="name"
@@ -484,18 +514,18 @@ const RuleEditor = (props: OwnProps) => {
               id="open"
               value="open"
               name="isOpen">
-              Open
+              {ScheduleManagerStrings[StringTemplates.OPEN]}
             </Radio>
             <Radio
               id="closed"
               value="closed"
               name="isOpen">
-              Closed
+              {ScheduleManagerStrings[StringTemplates.CLOSED]}
             </Radio>
           </RadioGroup>
           { !isOpen && (
             <>
-              <Label htmlFor="closedReason" required>Closed reason</Label>
+              <Label htmlFor="closedReason" required>{ScheduleManagerStrings[StringTemplates.CLOSED_REASON]}</Label>
               <Input
                 id="closedReason"
                 name="closedReason"
@@ -503,22 +533,22 @@ const RuleEditor = (props: OwnProps) => {
                 value={closedReason}
                 onChange={handleChangeClosedReason}
                 required />
-              <HelpText>This value will be provided to your application when the rule matches.</HelpText>
+              <HelpText>{ScheduleManagerStrings[StringTemplates.CLOSED_REASON_TEXT]}</HelpText>
             </>
           )}
           <Heading as="h3" variant="heading30">
-            Time Settings
+            {ScheduleManagerStrings[StringTemplates.TIME_SETTINGS_TITLE]}
           </Heading>
           <Checkbox
             checked={allDay}
             onChange={handleChangeAllDay}
             id="allDay"
             name="allDay">
-            All day
+            {ScheduleManagerStrings[StringTemplates.ALL_DAY]}
           </Checkbox>
           { !allDay && (
             <>
-              <Label htmlFor="startTime" required>Start time</Label>
+              <Label htmlFor="startTime" required>{ScheduleManagerStrings[StringTemplates.START_TIME]}</Label>
               <TimePicker
                 id="startTime"
                 name="startTime"
@@ -529,7 +559,7 @@ const RuleEditor = (props: OwnProps) => {
           )}
           { !allDay && (
           <>
-            <Label htmlFor="endTime" required>End time</Label>
+            <Label htmlFor="endTime" required>{ScheduleManagerStrings[StringTemplates.END_TIME]}</Label>
             <TimePicker
               id="endTime"
               name="endTime"
@@ -539,26 +569,26 @@ const RuleEditor = (props: OwnProps) => {
           </>
           )}
           <Heading as="h3" variant="heading30">
-            Date Settings
+            {ScheduleManagerStrings[StringTemplates.DATE_SETTINGS_TITLE]}
           </Heading>
           <>
-            <Label htmlFor="recurrence" required>Recurrence</Label>
+            <Label htmlFor="recurrence" required>{ScheduleManagerStrings[StringTemplates.RECURRENCE]}</Label>
             <Select
               id="recurrence"
               name="recurrence"
               defaultValue="none"
               value={recurrence}
               onChange={handleChangeRecurrence}>
-              <Option value="none">One time</Option>
-              <Option value="daily">Daily</Option>
-              <Option value="weekly">Weekly</Option>
-              <Option value="monthly">Monthly</Option>
-              <Option value="yearly">Yearly</Option>
+              <Option value="none">{ScheduleManagerStrings[StringTemplates.RECURRENCE_ONCE]}</Option>
+              <Option value="daily">{ScheduleManagerStrings[StringTemplates.RECURRENCE_DAILY]}</Option>
+              <Option value="weekly">{ScheduleManagerStrings[StringTemplates.RECURRENCE_WEEKLY]}</Option>
+              <Option value="monthly">{ScheduleManagerStrings[StringTemplates.RECURRENCE_MONTHLY]}</Option>
+              <Option value="yearly">{ScheduleManagerStrings[StringTemplates.RECURRENCE_YEARLY]}</Option>
             </Select>
           </>
           { recurrence === "none" && (
             <>
-              <Label htmlFor="singleDate" required>Date</Label>
+              <Label htmlFor="singleDate" required>{ScheduleManagerStrings[StringTemplates.DATE]}</Label>
               <DatePicker
                 id="singleDate"
                 name="singleDate"
@@ -570,86 +600,86 @@ const RuleEditor = (props: OwnProps) => {
           { recurrence === "weekly" && (
             <CheckboxGroup
               name="dayOfWeek"
-              legend="Day of week"
+              legend={ScheduleManagerStrings[StringTemplates.DAY_OF_WEEK]}
               required>
               <Checkbox
                 checked={dowMonday}
                 onChange={handleChangeDow}
                 id="dowMonday"
                 name="dowMonday">
-                Monday
+                {ScheduleManagerStrings[StringTemplates.DOW_MONDAY]}
               </Checkbox>
               <Checkbox
                 checked={dowTuesday}
                 onChange={handleChangeDow}
                 id="dowTuesday"
                 name="dowTuesday">
-                Tuesday
+                {ScheduleManagerStrings[StringTemplates.DOW_TUESDAY]}
               </Checkbox>
               <Checkbox
                 checked={dowWednesday}
                 onChange={handleChangeDow}
                 id="dowWednesday"
                 name="dowWednesday">
-                Wednesday
+                {ScheduleManagerStrings[StringTemplates.DOW_WEDNESDAY]}
               </Checkbox>
               <Checkbox
                 checked={dowThursday}
                 onChange={handleChangeDow}
                 id="dowThursday"
                 name="dowThursday">
-                Thursday
+                {ScheduleManagerStrings[StringTemplates.DOW_THURSDAY]}
               </Checkbox>
               <Checkbox
                 checked={dowFriday}
                 onChange={handleChangeDow}
                 id="dowFriday"
                 name="dowFriday">
-                Friday
+                {ScheduleManagerStrings[StringTemplates.DOW_FRIDAY]}
               </Checkbox>
               <Checkbox
                 checked={dowSaturday}
                 onChange={handleChangeDow}
                 id="dowSaturday"
                 name="dowSaturday">
-                Saturday
+                {ScheduleManagerStrings[StringTemplates.DOW_SATURDAY]}
               </Checkbox>
               <Checkbox
                 checked={dowSunday}
                 onChange={handleChangeDow}
                 id="dowSunday"
                 name="dowSunday">
-                Sunday
+                {ScheduleManagerStrings[StringTemplates.DOW_SUNDAY]}
               </Checkbox>
             </CheckboxGroup>
           )}
           { recurrence === "yearly" && (
             <>
-              <Label htmlFor="month" required>Month</Label>
+              <Label htmlFor="month" required>{ScheduleManagerStrings[StringTemplates.MONTH]}</Label>
               <Select
                 id="month"
                 name="month"
                 defaultValue="1"
                 value={month}
                 onChange={handleChangeMonth}>
-                <Option value="1">January</Option>
-                <Option value="2">February</Option>
-                <Option value="3">March</Option>
-                <Option value="4">April</Option>
-                <Option value="5">May</Option>
-                <Option value="6">June</Option>
-                <Option value="7">July</Option>
-                <Option value="8">August</Option>
-                <Option value="9">September</Option>
-                <Option value="10">October</Option>
-                <Option value="11">November</Option>
-                <Option value="12">December</Option>
+                <Option value="1">{ScheduleManagerStrings[StringTemplates.MONTH_JAN]}</Option>
+                <Option value="2">{ScheduleManagerStrings[StringTemplates.MONTH_FEB]}</Option>
+                <Option value="3">{ScheduleManagerStrings[StringTemplates.MONTH_MAR]}</Option>
+                <Option value="4">{ScheduleManagerStrings[StringTemplates.MONTH_APR]}</Option>
+                <Option value="5">{ScheduleManagerStrings[StringTemplates.MONTH_MAY]}</Option>
+                <Option value="6">{ScheduleManagerStrings[StringTemplates.MONTH_JUN]}</Option>
+                <Option value="7">{ScheduleManagerStrings[StringTemplates.MONTH_JUL]}</Option>
+                <Option value="8">{ScheduleManagerStrings[StringTemplates.MONTH_AUG]}</Option>
+                <Option value="9">{ScheduleManagerStrings[StringTemplates.MONTH_SEP]}</Option>
+                <Option value="10">{ScheduleManagerStrings[StringTemplates.MONTH_OCT]}</Option>
+                <Option value="11">{ScheduleManagerStrings[StringTemplates.MONTH_NOV]}</Option>
+                <Option value="12">{ScheduleManagerStrings[StringTemplates.MONTH_DEC]}</Option>
               </Select>
             </>
           )}
           { (recurrence === "monthly" || recurrence === "yearly") && (
             <>
-              <Label htmlFor="dayOfMonth" required>Day of month</Label>
+              <Label htmlFor="dayOfMonth" required>{ScheduleManagerStrings[StringTemplates.DAY_OF_MONTH]}</Label>
               <Input
                 id="dayOfMonth"
                 name="dayOfMonth"
@@ -665,12 +695,12 @@ const RuleEditor = (props: OwnProps) => {
               onChange={handleChangeRestrictDates}
               id="restrictDates"
               name="restrictDates">
-              Restrict date range
+              {ScheduleManagerStrings[StringTemplates.RESTRICT_DATE_RANGE]}
             </Checkbox>
           )}
           { recurrence !== "none" && restrictDates && (
             <>
-              <Label htmlFor="startDate">Start date</Label>
+              <Label htmlFor="startDate">{ScheduleManagerStrings[StringTemplates.START_DATE]}</Label>
               <DatePicker
                 id="startDate"
                 name="startDate"
@@ -681,7 +711,7 @@ const RuleEditor = (props: OwnProps) => {
           )}
           { recurrence !== "none" && restrictDates && (
             <>
-              <Label htmlFor="endDate">End date</Label>
+              <Label htmlFor="endDate">{ScheduleManagerStrings[StringTemplates.END_DATE]}</Label>
               <DatePicker
                 id="endDate"
                 name="endDate"
@@ -696,15 +726,19 @@ const RuleEditor = (props: OwnProps) => {
               <Alert variant='error'>{error}</Alert>
             )
           }
-          <Stack orientation='horizontal' spacing='space60'>
+          <Stack orientation='horizontal' spacing='space30'>
             <Button variant='primary' onClick={handleSave}>
-              Save
+              {ScheduleManagerStrings[StringTemplates.SAVE_BUTTON]}
+            </Button>
+            <Button variant='secondary' onClick={handleCopy}>
+              {ScheduleManagerStrings[StringTemplates.SAVE_COPY_BUTTON]}
             </Button>
             {
-              props.selectedRule !== null &&
-                (<Button variant='destructive' onClick={handleDelete}>
-                  Delete
-                </Button>)
+              props.selectedRule !== null && (
+                <Button variant='destructive_secondary' onClick={handleDelete}>
+                  {ScheduleManagerStrings[StringTemplates.DELETE_BUTTON]}
+                </Button>
+              )
             }
           </Stack>
         </Stack>

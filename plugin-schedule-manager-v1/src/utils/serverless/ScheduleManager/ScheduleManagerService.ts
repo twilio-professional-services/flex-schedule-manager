@@ -1,26 +1,26 @@
 import * as Flex from '@twilio/flex-ui';
-import { ScheduleManagerConfig, UpdateSchedulesResponse, UpdateSchedulesStatusResponse, PublishSchedulesRequest, PublishSchedulesResponse } from '../../../types/schedule-manager';
+import { ScheduleManagerConfig, UpdateConfigResponse, UpdateConfigStatusResponse, PublishConfigRequest, PublishConfigResponse } from '../../../types/schedule-manager';
 import { EncodedParams } from '../../../types/serverless';
 import ApiService from '../ApiService';
 
 class ScheduleManagerService extends ApiService {
 
-  async listSchedules(): Promise<ScheduleManagerConfig | null> {
+  async list(): Promise<ScheduleManagerConfig | null> {
     try {
-      const config = await this.#listSchedules();
+      const config = await this.#list();
       return config;
     } catch (error) {
-      console.log('Unable to list schedules', error);
+      console.log('Unable to list config', error);
       return null;
     }
   }
   
-  async updateSchedules(config: ScheduleManagerConfig): Promise<UpdateSchedulesResponse> {
+  async update(config: ScheduleManagerConfig): Promise<UpdateConfigResponse> {
     try {
-      const response = await this.#updateSchedules(config);
+      const response = await this.#update(config);
       return response;
     } catch (error) {
-      console.log('Unable to update schedules', error);
+      console.log('Unable to update config', error);
       
       // TODO: Modify request util to return status too.
       if (error == 'Provided version SID is not the latest deployed asset version SID')
@@ -38,12 +38,12 @@ class ScheduleManagerService extends ApiService {
     }
   }
   
-  async updateSchedulesStatus(buildSid: string): Promise<UpdateSchedulesStatusResponse> {
+  async updateStatus(buildSid: string): Promise<UpdateConfigStatusResponse> {
     try {
-      const response = await this.#updateSchedulesStatus({buildSid});
+      const response = await this.#updateStatus({buildSid});
       return response;
     } catch (error) {
-      console.log('Unable to get schedule build status', error);
+      console.log('Unable to get config build status', error);
       return {
         success: false,
         buildStatus: 'error'
@@ -51,12 +51,12 @@ class ScheduleManagerService extends ApiService {
     }
   }
   
-  async publishSchedules(buildSid: string): Promise<PublishSchedulesResponse> {
+  async publish(buildSid: string): Promise<PublishConfigResponse> {
     try {
-      const response = await this.#publishSchedules({buildSid});
+      const response = await this.#publish({buildSid});
       return response;
     } catch (error) {
-      console.log('Unable to publish schedules', error);
+      console.log('Unable to publish config', error);
       return {
         success: false,
         deploymentSid: 'error'
@@ -64,7 +64,7 @@ class ScheduleManagerService extends ApiService {
     }
   }
 
-  #listSchedules = async () : Promise<ScheduleManagerConfig> => {
+  #list = async () : Promise<ScheduleManagerConfig> => {
     const manager = Flex.Manager.getInstance();
     
     const encodedParams: EncodedParams = {
@@ -72,7 +72,7 @@ class ScheduleManagerService extends ApiService {
     };
     
     const response = await this.fetchJsonWithReject<ScheduleManagerConfig>(
-      `https://${this.serverlessDomain}/list-schedules`,
+      `https://${this.serverlessDomain}/admin/list`,
       {
         method: 'post',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -85,7 +85,7 @@ class ScheduleManagerService extends ApiService {
     };
   };
   
-  #updateSchedules = async (config: ScheduleManagerConfig) : Promise<UpdateSchedulesResponse> => {
+  #update = async (config: ScheduleManagerConfig) : Promise<UpdateConfigResponse> => {
     const manager = Flex.Manager.getInstance();
     
     const params = {
@@ -93,8 +93,8 @@ class ScheduleManagerService extends ApiService {
       Token: manager.user.token,
     };
     
-    const response = await this.fetchJsonWithReject<UpdateSchedulesResponse>(
-      `https://${this.serverlessDomain}/update-schedules`,
+    const response = await this.fetchJsonWithReject<UpdateConfigResponse>(
+      `https://${this.serverlessDomain}/admin/update`,
       {
         method: 'post',
         headers: { 'Content-Type': 'application/json' },
@@ -107,7 +107,7 @@ class ScheduleManagerService extends ApiService {
     };
   };
   
-  #updateSchedulesStatus = async (request: PublishSchedulesRequest) : Promise<UpdateSchedulesStatusResponse> => {
+  #updateStatus = async (request: PublishConfigRequest) : Promise<UpdateConfigStatusResponse> => {
     const manager = Flex.Manager.getInstance();
     
     const encodedParams: EncodedParams = {
@@ -115,8 +115,8 @@ class ScheduleManagerService extends ApiService {
       Token: encodeURIComponent(manager.user.token),
     };
     
-    const response = await this.fetchJsonWithReject<UpdateSchedulesStatusResponse>(
-      `https://${this.serverlessDomain}/update-schedules-status`,
+    const response = await this.fetchJsonWithReject<UpdateConfigStatusResponse>(
+      `https://${this.serverlessDomain}/admin/update-status`,
       {
         method: 'post',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -127,7 +127,7 @@ class ScheduleManagerService extends ApiService {
     return response;
   };
   
-  #publishSchedules = async (request: PublishSchedulesRequest) : Promise<PublishSchedulesResponse> => {
+  #publish = async (request: PublishConfigRequest) : Promise<PublishConfigResponse> => {
     const manager = Flex.Manager.getInstance();
     
     const encodedParams: EncodedParams = {
@@ -135,8 +135,8 @@ class ScheduleManagerService extends ApiService {
       Token: encodeURIComponent(manager.user.token),
     };
     
-    const response = await this.fetchJsonWithReject<PublishSchedulesResponse>(
-      `https://${this.serverlessDomain}/publish-schedules`,
+    const response = await this.fetchJsonWithReject<PublishConfigResponse>(
+      `https://${this.serverlessDomain}/admin/publish`,
       {
         method: 'post',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

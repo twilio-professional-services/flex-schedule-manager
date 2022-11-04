@@ -17,16 +17,18 @@ import { DeleteIcon } from "@twilio-paste/icons/esm/DeleteIcon";
 
 import { isScheduleUnique, updateScheduleData } from '../../utils/schedule-manager';
 import { Schedule, Rule } from '../../types/schedule-manager';
+import ScheduleManagerStrings, { StringTemplates } from '../../flex-hooks/strings/ScheduleManager';
 
 interface OwnProps {
   onPanelClosed: () => void;
   rules: Rule[];
   showPanel: boolean;
   selectedSchedule: Schedule | null;
-  onUpdateSchedule: (schedules: Schedule[]) => void;
+  onUpdateSchedule: (schedules: Schedule[], openIndex: number | null) => void;
 }
 
 const ScheduleEditor = (props: OwnProps) => {
+  const [filteredTimeZones, setFilteredTimeZones] = useState([] as string[]);
   const [timeZones, setTimeZones] = useState([] as string[]);
   
   const [name, setName] = useState("");
@@ -49,7 +51,7 @@ const ScheduleEditor = (props: OwnProps) => {
   useEffect(() => {
     resetView();
     
-    if (props.selectedSchedule === null) {
+    if (!props.selectedSchedule) {
       return;
     }
     
@@ -85,6 +87,10 @@ const ScheduleEditor = (props: OwnProps) => {
     
     setFilteredRules(filtered);
   }, [props.rules, rules, addRuleInput]);
+  
+  useEffect(() => {
+    setFilteredTimeZones(timeZones);
+  }, [timeZones]);
   
   const resetView = () => {
     setName("");
@@ -154,14 +160,14 @@ const ScheduleEditor = (props: OwnProps) => {
     setRules(rules => rules.filter(item => rule.id !== item.id));
   }
   
-  const handleSave = () => {
+  const saveSchedule = (copy: boolean = false) => {
     if (!name) {
-      setError('Name is a required field.');
+      setError(ScheduleManagerStrings[StringTemplates.ERROR_NAME_REQUIRED]);
       return;
     }
     
     if (!timeZone) {
-      setError('Time zone is a required field.');
+      setError(ScheduleManagerStrings[StringTemplates.ERROR_TIMEZONE_REQUIRED]);
       return;
     }
     
@@ -170,10 +176,39 @@ const ScheduleEditor = (props: OwnProps) => {
     if (isScheduleUnique(newSchedule, props.selectedSchedule)) {
       setError('');
       const newScheduleData = updateScheduleData(newSchedule, props.selectedSchedule);
-      props.onUpdateSchedule(newScheduleData);
+      
+      if (copy) {
+        copySchedule(newSchedule);
+      } else {
+        props.onUpdateSchedule(newScheduleData, null);
+      }
     } else {
-      setError('Name must be unique.');
+      setError(ScheduleManagerStrings[StringTemplates.ERROR_NAME_UNIQUE]);
     }
+  }
+  
+  const copySchedule = (schedule: Schedule) => {
+    let name = schedule.name + ` ${ScheduleManagerStrings[StringTemplates.NAME_COPY]}`;
+    
+    let scheduleCopy = {
+      ...schedule,
+      name
+    }
+    
+    while (!isScheduleUnique(scheduleCopy, null)) {
+      scheduleCopy.name = scheduleCopy.name + ` ${ScheduleManagerStrings[StringTemplates.NAME_COPY]}`;
+    }
+    
+    const scheduleCopyData = updateScheduleData(scheduleCopy, null);
+    props.onUpdateSchedule(scheduleCopyData, scheduleCopyData.indexOf(scheduleCopy));
+  }
+  
+  const handleSave = () => {
+    saveSchedule(false);
+  }
+  
+  const handleCopy = () => {
+    saveSchedule(true);
   }
   
   const handleDelete = () => {
@@ -182,7 +217,7 @@ const ScheduleEditor = (props: OwnProps) => {
     }
     
     const newScheduleData = updateScheduleData(null, props.selectedSchedule);
-    props.onUpdateSchedule(newScheduleData);
+    props.onUpdateSchedule(newScheduleData, null);
   }
   
   return (
@@ -190,11 +225,12 @@ const ScheduleEditor = (props: OwnProps) => {
       displayName='scheduleEditor'
       isHidden={!props.showPanel}
       handleCloseClick={props.onPanelClosed}
-      title={<span>{ props.selectedSchedule === null ? 'New' : 'Edit' } Schedule</span>}
+      title={<span>{ props.selectedSchedule === null ? ScheduleManagerStrings[StringTemplates.NEW_SCHEDULE_TITLE] : ScheduleManagerStrings[StringTemplates.EDIT_SCHEDULE_TITLE] }</span>}
     >
       <Box padding='space60'>
-         <Stack orientation="vertical" spacing='space80'>
-            <Label htmlFor="name" required>Name</Label>
+        <Stack orientation="vertical" spacing='space80'>
+          <>
+            <Label htmlFor="name" required>{ScheduleManagerStrings[StringTemplates.NAME]}</Label>
             <Input
               id="name"
               name="name"
@@ -202,54 +238,60 @@ const ScheduleEditor = (props: OwnProps) => {
               value={name}
               onChange={handleChangeName}
               required />
-
-              <Combobox
-            items={timeZones}
-            labelText="Time zone"
+          </>
+          <Combobox
+            autocomplete
+            items={filteredTimeZones}
+            labelText={ScheduleManagerStrings[StringTemplates.TIMEZONE]}
             selectedItem={timeZone}
             onSelectedItemChange={handleChangeTimeZone}
+            onInputValueChange={({ inputValue }) => {
+              if (inputValue) {
+                setFilteredTimeZones(timeZones.filter(timeZone => timeZone.toLowerCase().indexOf(inputValue.toLowerCase()) >= 0))
+              } else {
+                setFilteredTimeZones(timeZones);
+              }
+            }}
             required />
-          
-
           <Checkbox
             checked={manualClose}
             onChange={handleChangeManualClose}
             id="manualClose"
             name="manualClose"
-            helpText="Overrides all selected rules">
-            Manually close
+            helpText={ScheduleManagerStrings[StringTemplates.MANUALLYCLOSE_TEXT]}>
+            {ScheduleManagerStrings[StringTemplates.MANUALLYCLOSE]}
           </Checkbox>
           <Heading as="h3" variant="heading30">
-            Rules
+            {ScheduleManagerStrings[StringTemplates.RULES]}
           </Heading>
-          <HelpText>If an open rule matches and no closed rules match, the schedule is open. If a closed rule matches, the topmost match in the list is used.</HelpText>
+          <HelpText>{ScheduleManagerStrings[StringTemplates.RULES_TEXT]}</HelpText>
           <Combobox
             autocomplete
             items={filteredRules}
-            labelText="Add rule"
+            labelText={ScheduleManagerStrings[StringTemplates.ADD_RULE]}
             optionTemplate={(item: Rule) => item.name}
             state={{...state}} />
           <DataTable
             items={rules}>
             <ColumnDefinition
               key="actions-column"
-              header="Actions"
+              header={ScheduleManagerStrings[StringTemplates.COLUMN_ACTIONS]}
               content={(item: Rule) => (
                   <Stack orientation='horizontal' spacing='space20'>
                     <Button variant='secondary' size='icon_small' onClick={_ => handleRuleUp(item)}>
-                      <ChevronUpIcon decorative={false} title='Up' />
+                      <ChevronUpIcon decorative={false} title={ScheduleManagerStrings[StringTemplates.UP]} />
                     </Button>
                     <Button variant='secondary' size='icon_small' onClick={_ => handleRuleDown(item)}>
-                      <ChevronDownIcon decorative={false} title='Down' />
+                      <ChevronDownIcon decorative={false} title={ScheduleManagerStrings[StringTemplates.DOWN]} />
                     </Button>
                     <Button variant='destructive_secondary' size='icon_small' onClick={_ => handleRuleRemove(item)}>
-                      <DeleteIcon decorative={false} title='Remove from schedule' />
+                      <DeleteIcon decorative={false} title={ScheduleManagerStrings[StringTemplates.REMOVE_FROM_SCHEDULE]} />
                     </Button>
                   </Stack>
                 )} />
             <ColumnDefinition
               key="name-column"
-              header="Rule"
+              header={ScheduleManagerStrings[StringTemplates.COLUMN_RULE]}
               content={(item: Rule) => {
                 return <span>{item.name}</span>
               }} />
@@ -260,15 +302,19 @@ const ScheduleEditor = (props: OwnProps) => {
               <Alert variant='error'>{error}</Alert>
             )
           }
-          <Stack orientation='horizontal' spacing='space60'>
+          <Stack orientation='horizontal' spacing='space30'>
             <Button variant='primary' onClick={handleSave}>
-              Save
+              {ScheduleManagerStrings[StringTemplates.SAVE_BUTTON]}
+            </Button>
+            <Button variant='secondary' onClick={handleCopy}>
+              {ScheduleManagerStrings[StringTemplates.SAVE_COPY_BUTTON]}
             </Button>
             {
-              props.selectedSchedule !== null &&
-                (<Button variant='destructive' onClick={handleDelete}>
-                  Delete
-                </Button>)
+              props.selectedSchedule !== null && (
+                <Button variant='destructive_secondary' onClick={handleDelete}>
+                  {ScheduleManagerStrings[StringTemplates.DELETE_BUTTON]}
+                </Button>
+              )
             }
           </Stack>
         </Stack>
