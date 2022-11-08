@@ -89,8 +89,14 @@ Content-Type: application/json
 
 Next, switch to the Flex plugin directory:
 
+Flex UI version 1.x 
 ```bash
-cd ../plugin-schedule-manager
+cd ../plugin-schedule-manager-v1
+```
+
+Flex UI version 2.x
+```bash
+cd ../plugin-schedule-manager-v2
 ```
 
 Copy `public/appConfig.example.js` to `public/appConfig.js`:
