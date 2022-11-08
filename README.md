@@ -20,8 +20,6 @@ To allow for greater scalability than provided by Twilio Sync and some other sol
 
 ## Pre-requisites
 
-The plugin component is designed for usage with Flex UI 2.x only.
-
 Make sure you have [Node.js](https://nodejs.org) as well as [`npm`](https://npmjs.com) installed.
 
 Next, please install the [Twilio CLI](https://www.twilio.com/docs/twilio-cli/quickstart). If you are using Homebrew on macOS, you can do so by running:
