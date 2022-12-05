@@ -43,6 +43,7 @@ First, clone the repository, change to its directory, and install:
 git clone https://github.com/twilio-professional-services/flex-schedule-manager.git
 
 cd flex-schedule-manager
+cd serverless
 npm install
 ```
 
@@ -79,7 +80,7 @@ Content-Type: application/json
   "ui_attributes": {
     ... include your existing ui_attributes here ...
     "schedule_manager": {
-      "serverless_functions_domain": "Enter the serverless domain here"
+      "serverless_functions_domain": "Enter the serverless domain here, example: schedule-manager-XXXX-dev.twil.io"
     }
   }
 }
