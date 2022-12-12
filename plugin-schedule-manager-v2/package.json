@@ -16,7 +16,7 @@
     "tzdata": "^1.0.32"
   },
   "devDependencies": {
-    "@twilio/flex-ui": "2.0.0-beta.2",
+    "@twilio/flex-ui": "^2",
     "@types/uuid": "^8.3.4",
     "react-test-renderer": "17.0.2",
     "typescript": "^4"
