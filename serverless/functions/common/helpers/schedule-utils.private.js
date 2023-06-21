@@ -1,7 +1,7 @@
 const { RRule } = require('rrule');
 const { DateTime } = require('luxon');
 
-const assetPath = '/schedules.json';
+const assetPath = '/config.json';
 
 // load schedule data
 const openScheduleData = Runtime.getAssets()[assetPath].open;

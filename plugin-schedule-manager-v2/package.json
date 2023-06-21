@@ -1,0 +1,24 @@
+{
+  "name": "plugin-schedule-manager",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "postinstall": "flex-plugin pre-script-check"
+  },
+  "dependencies": {
+    "@twilio-paste/core": "^15.3.0",
+    "@twilio-paste/icons": "^9.2.0",
+    "@twilio/flex-plugin-scripts": "6.0.2",
+    "prop-types": "^15.7.2",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "rrule": "^2.7.1",
+    "tzdata": "^1.0.32"
+  },
+  "devDependencies": {
+    "@twilio/flex-ui": "^2",
+    "@types/uuid": "^8.3.4",
+    "react-test-renderer": "17.0.2",
+    "typescript": "^4"
+  }
+}

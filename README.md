@@ -20,8 +20,6 @@ To allow for greater scalability than provided by Twilio Sync and some other sol
 
 ## Pre-requisites
 
-The plugin component is designed for usage with Flex UI 2.x only.
-
 Make sure you have [Node.js](https://nodejs.org) as well as [`npm`](https://npmjs.com) installed.
 
 Next, please install the [Twilio CLI](https://www.twilio.com/docs/twilio-cli/quickstart). If you are using Homebrew on macOS, you can do so by running:
@@ -39,25 +37,36 @@ twilio plugins:install @twilio-labs/plugin-serverless
 
 ## Installation
 
-First, clone the repository and change to its directory:
+First, clone the repository, change to its directory, and install:
 
 ```bash
 git clone https://github.com/twilio-professional-services/flex-schedule-manager.git
 
 cd flex-schedule-manager
+cd serverless
+npm install
+```
+
+Then, copy `.env.example` to `.env` and configure your Twilio account SID and token:
+
+```
+ACCOUNT_SID=ACxxxxxx
+AUTH_TOKEN=abc123
+
+TWILIO_SERVICE_RETRY_LIMIT=5
+TWILIO_SERVICE_MIN_BACKOFF=100
+TWILIO_SERVICE_MAX_BACKOFF=300
 ```
 
 Then, deploy the serverless functions:
 
 ```bash
-cd serverless
-npm install
 twilio serverless:deploy
 ```
 
-Note the domain name that is output when the deploy completes.
+Note the domain name that is output when the deploy completes--this will be referenced throughout the rest of the readme.
 
-**Note: If you need to re-deploy via CLI in the future, be sure to first update your local `assets/schedules.private.json` file with any configuration changes.**
+**Note: If you need to re-deploy via CLI in the future, be sure to first update your local `serverless/assets/config.private.json` file with any configuration changes.**
 
 Then, update the Flex UI configuration with the serverless function domain from above:
 
@@ -71,7 +80,7 @@ Content-Type: application/json
   "ui_attributes": {
     ... include your existing ui_attributes here ...
     "schedule_manager": {
-      "serverless_functions_domain": "Enter the serverless domain here"
+      "serverless_functions_domain": "Enter the serverless domain here, example: schedule-manager-XXXX-dev.twil.io"
     }
   }
 }
@@ -79,8 +88,14 @@ Content-Type: application/json
 
 Next, switch to the Flex plugin directory:
 
+Flex UI version 1.x 
 ```bash
-cd ../plugin-schedule-manager
+cd ../plugin-schedule-manager-v1
+```
+
+Flex UI version 2.x
+```bash
+cd ../plugin-schedule-manager-v2
 ```
 
 Copy `public/appConfig.example.js` to `public/appConfig.js`:
@@ -112,6 +127,10 @@ twilio flex:plugins:deploy --major --changelog "Notes for this version" --descri
 After your deployment runs you will receive instructions for releasing your plugin from the bash prompt. You can use this or skip this step and release your plugin from the Flex plugin dashboard here https://flex.twilio.com/admin/plugins
 
 For more details on deploying your plugin, refer to the [deploying your plugin guide](https://www.twilio.com/docs/flex/plugins#deploying-your-plugin).
+
+## Example configurations
+
+Example configurations, such as pre-defined holidays, are available in the `examples` directory. To use one of these, paste the contents of the desired file into `serverless/assets/config.private.json`, replacing its contents. Then, deploy the service.
 
 ## Evaluating schedules
 
@@ -181,7 +200,7 @@ import { loadScheduleData } from 'utils/schedule-manager';
 const scheduleData = await loadScheduleData();
 ```
 
-This calls the `list-schedules` function, which requires the Flex user token. `scheduleData` will include a `schedules` array, containing each schedule. Each schedule will have a `status` object, which contains the same object you would get from calling the `check-schedules` function.
+This calls the `admin/list` function, which requires the Flex user token. `scheduleData` will include a `data` object with a `schedules` array, containing each schedule. Each schedule will have a `status` object, which contains the same object you would get from calling the `check-schedules` function.
 
 ## Using within Studio
 
@@ -220,10 +239,6 @@ The Flex plugin loads the configuration interface for workers with the `admin` r
 
 - When updating configuration with the `update-schedules` function, the `version` property must be provided with the same `version` that was retrieved from the `list-schedules` function which loaded the initial data. If this does not match, the request will fail. In the user interface, the following alert will be shown: `Schedule was updated by someone else and cannot be published. Please reload and try again.` This allows the worker to rescue the changes they were attempting to make, and merge them with the changes that were saved first.
 - When retrieving configuration from this `list-schedules` function, a check is made that the latest build is what is deployed. The `versionIsDeployed` property is returned indicating whether this is the case. If it is not, this means another user is in the middle of publishing changes. In the user interface, the following alert will be shown: `Another schedule publish is in progress. Publishing now will overwrite other changes.` This allows the worker to wait for the publish to complete before making changes.
-
-## Inclusion in a monoplugin
-
-While it makes sense for many Flex plugins to be combined into a monoplugin such as [twilio-proserv-flex-project-template](https://github.com/twilio-professional-services/twilio-proserv-flex-project-template), this specific solution is recommended to be deployed as part of a separate package. This is because the entire serverless service gets re-deployed upon configuration publishes, so a monoplugin structure would result in re-deploying excessive amounts of serverless functions and assets.
 
 ## Development
 
