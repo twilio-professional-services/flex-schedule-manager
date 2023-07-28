@@ -1,5 +1,12 @@
 # Twilio Flex Schedule Manager
 
+> [!IMPORTANT]  
+> The schedule manager is now available in the [Flex Plugin Library](https://www.twilio.com/docs/flex/developer/plugins/plugin-library). You may now install the schedule manager in one of the following ways:
+> - Via the plugin library by navigating to Flex UI > Admin > Plugins and selecting "Contact Center Schedule Manager"
+> - Via the [Flex Project Template](https://github.com/twilio-professional-services/flex-project-template), which allows you to orchestrate deployment of your entire Flex solution
+>
+> This repository is now redundant and has been archived.
+
 This solution provides a flexible, robust, and scalable way to manage open and closed hours for Twilio Flex applications.
 
 ![Schedule manager](screenshots/schedules.png)
